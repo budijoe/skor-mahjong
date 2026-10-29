@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKOR MAHJONG</title>
+    <!-- Home screen & browser icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="apple-mobile-web-app-title" content="Skor Mahjong">
+    <meta name="theme-color" content="#074513">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mjbg: '#F9F5F1',
+                        mjtext: '#074513',
+                        mjgreen: '#074513',
+                        mjaccent: '#0e6920',
+                        mjlight: '#e2efe4',
+                        mjdanger: '#c53030',
+                        mjgold: '#d69e2e'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F9F5F1;
+            color: #074513;
+        }
+        .btn-shadow {
+            box-shadow: 0 4px 6px -1px rgba(7, 69, 19, 0.2), 0 2px 4px -1px rgba(7, 69, 19, 0.1);
+        }
+        .btn-shadow:active {
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+            transform: translateY(1px);
+        }
+        /* html2canvas measures text baselines with an <img>; Tailwind's display:block on img shifts captured text down */
+        img {
+            display: inline-block;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F5F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a3c9a8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-mjgreen selection:text-white">
+
+    <!-- Header App -->
+    <header class="w-full bg-mjgreen text-white shadow-md py-4 px-4 sticky top-0 z-30">
+        <div class="max-w-xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">🀄</span>
+                <div class="leading-tight">
+                    <h1 class="text-xl md:text-2xl font-black tracking-wider uppercase">SKOR MAHJONG</h1>
+                    <p class="text-[11px] font-semibold tracking-wide text-white/75">Sistem Bandung YDSP</p>
+                </div>
+            </div>
+            <div id="round-counter-badge" class="hidden bg-white/10 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border border-white/20">
+                Ronde <span id="current-round-num">1</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-xl w-full mx-auto p-4 md:p-6 flex flex-col justify-start">
+
+        <!-- ========================================== -->
+        <!-- SCREEN 1: SETUP NAMA PEMAIN                -->
+        <!-- ========================================== -->
+        <section id="screen-setup" class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-mjgreen/10 space-y-4">
+                <div class="text-center space-y-1">
+                    <h2 class="text-lg font-bold text-mjgreen">Masukkan Nama Pemain</h2>
+                    <p class="text-xs text-mjtext/70">Isi nama 4 pemain yang akan bertanding</p>
+                </div>
+
+                <form id="setup-form" class="space-y-3" onsubmit="startGame(event)">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-mjgreen">Pemain 1 — 東</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-mjgreen/50">👤</span>
+                            <input type="text" id="p1-input" required placeholder="Contoh: Budi" value="Budi"
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-mjgreen/20 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-medium text-sm transition bg-mjbg/30">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-mjgreen">Pemain 2 — 南</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-mjgreen/50">👤</span>
+                            <input type="text" id="p2-input" required placeholder="Contoh: Joseph" value="Joseph"
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-mjgreen/20 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-medium text-sm transition bg-mjbg/30">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-mjgreen">Pemain 3 — 西</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-mjgreen/50">👤</span>
+                            <input type="text" id="p3-input" required placeholder="Contoh: Hansen" value="Hansen"
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-mjgreen/20 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-medium text-sm transition bg-mjbg/30">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-mjgreen">Pemain 4 — 北</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-mjgreen/50">👤</span>
+                            <input type="text" id="p4-input" required placeholder="Contoh: Ramses" value="Ramses"
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-mjgreen/20 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-medium text-sm transition bg-mjbg/30">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full mt-4 bg-mjgreen hover:bg-mjaccent text-white font-bold py-3.5 px-4 rounded-xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-base">
+                        <span>Mulai Permainan</span>
+                        <i class="fa-solid fa-play text-sm"></i>
+                    </button>
+                </form>
+            </div>
+
+            <a href="https://mj-ydsp.univer.se" target="_blank" rel="noopener noreferrer" class="w-full bg-white hover:bg-mjlight text-mjgreen border-2 border-mjgreen font-extrabold py-3.5 px-4 rounded-xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-sm tracking-wide">
+                <i class="fa-solid fa-book-open"></i>
+                <span>PANDUAN CARA HITUNG SKOR YDSP</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+            </a>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SCREEN 2: MAIN DASHBOARD & SCOREBOARD      -->
+        <!-- ========================================== -->
+        <section id="screen-dashboard" class="hidden space-y-6">
+            
+            <!-- Angin Ronde -->
+            <div class="bg-white rounded-2xl px-4 py-3 shadow-sm border border-mjgreen/10 flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-mjgreen/70">Angin Ronde</span>
+                <span class="flex items-center space-x-2">
+                    <span id="round-wind-char" class="text-2xl font-black text-mjgreen leading-none">東</span>
+                    <span id="round-wind-name" class="text-sm font-bold text-mjgreen">Timur</span>
+                </span>
+            </div>
+
+            <!-- Grid Card Skor Pemain (urutan melawan arah jarum jam: P1 kiri atas, P2 kiri bawah, P3 kanan bawah, P4 kanan atas) -->
+            <div class="grid grid-cols-2 gap-3 md:gap-4" id="scoreboard-grid">
+                <!-- Dynamic Player Cards will be rendered here -->
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-3 pt-2">
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="openRecordModal()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-extrabold py-4 px-3 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-base tracking-wide border-2 border-mjgreen">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>CATAT SKOR</span>
+                    </button>
+
+                    <button onclick="recordDraw()" class="w-full bg-white hover:bg-mjlight text-mjgreen font-extrabold py-4 px-3 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-base tracking-wide border-2 border-mjgreen">
+                        <i class="fa-solid fa-handshake"></i>
+                        <span>IMBANG</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="openFinishModal()" class="w-full bg-mjgold hover:bg-amber-600 text-white font-extrabold py-3.5 px-3 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-sm tracking-wide border-2 border-mjgold">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <span>PERMAINAN SELESAI</span>
+                    </button>
+
+                    <button onclick="openPenaltyModal()" class="w-full bg-white hover:bg-red-50 text-mjdanger font-extrabold py-3.5 px-3 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-sm tracking-wide border-2 border-mjdanger">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>PENALTI</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- History Logs -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-mjgreen/10 space-y-3">
+                <div class="flex items-center justify-between border-b border-mjbg pb-2">
+                    <h3 class="font-bold text-xs uppercase tracking-wider text-mjgreen flex items-center space-x-1.5">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Riwayat Ronde</span>
+                    </h3>
+                    <button id="btn-undo" onclick="undoLastRound()" class="hidden text-xs text-mjdanger hover:underline font-semibold flex items-center space-x-1">
+                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                        <span>Batalkan Ronde Terakhir</span>
+                    </button>
+                </div>
+                
+                <div id="history-container" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    <p class="text-xs text-center text-gray-400 py-4 italic">Belum ada skor yang dicatat.</p>
+                </div>
+            </div>
+
+            <button onclick="openResetModal()" class="w-full bg-transparent hover:bg-red-50 text-mjdanger border-2 border-mjdanger/30 hover:border-mjdanger font-bold py-3 px-6 rounded-2xl transition duration-200 flex items-center justify-center space-x-2 text-sm">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>ULANGI DARI AWAL</span>
+            </button>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SCREEN 3: SKOR MAHJONG HARI INI            -->
+        <!-- ========================================== -->
+        <section id="screen-final" class="hidden space-y-4">
+            <div id="final-capture" class="bg-mjbg rounded-3xl p-5 space-y-5 border border-mjgreen/10">
+                <div class="text-center space-y-1">
+                    <div class="text-3xl">🀄</div>
+                    <h2 class="text-2xl font-black tracking-wider uppercase text-mjgreen">SKOR MAHJONG HARI INI</h2>
+                    <p class="text-[11px] font-semibold text-mjgreen/60">Sistem Bandung YDSP</p>
+                    <p class="text-sm font-bold text-mjgreen pt-1"><span id="final-date"></span> · Mulai <span id="final-start-time"></span></p>
+                    <div class="flex items-center justify-center space-x-4 text-xs text-mjtext/70 font-medium">
+                        <span><i class="fa-regular fa-clock mr-1"></i><span id="final-duration"></span></span>
+                        <span><i class="fa-solid fa-layer-group mr-1"></i><span id="final-rounds"></span> Ronde</span>
+                    </div>
+                </div>
+
+                <div id="final-ranking" class="space-y-2.5">
+                    <!-- Dynamic ranking -->
+                </div>
+
+                <div class="text-sm text-mjgreen space-y-1.5 border-t border-mjgreen/15 pt-3">
+                    <div><span class="font-medium">Tay Terbesar:</span> <span id="final-biggest-hand" class="font-bold"></span></div>
+                    <div><span class="font-medium">Poin Ronde Terbesar:</span> <span id="final-biggest-round" class="font-bold"></span></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="shareFinal()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-extrabold py-3.5 rounded-2xl btn-shadow transition flex items-center justify-center space-x-2 text-sm tracking-wide">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>BAGIKAN</span>
+                </button>
+                <button onclick="saveFinal()" class="w-full bg-white hover:bg-mjlight text-mjgreen border-2 border-mjgreen font-extrabold py-3.5 rounded-2xl btn-shadow transition flex items-center justify-center space-x-2 text-sm tracking-wide">
+                    <i class="fa-solid fa-download"></i>
+                    <span>SIMPAN</span>
+                </button>
+            </div>
+
+            <button onclick="openResetModal()" class="w-full bg-transparent hover:bg-red-50 text-mjdanger border-2 border-mjdanger/30 hover:border-mjdanger font-bold py-3 px-6 rounded-2xl transition duration-200 flex items-center justify-center space-x-2 text-sm">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>PERMAINAN BARU</span>
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center italic text-xs leading-relaxed py-4 px-4" style="color: #A59C91;">
+        <p>budijoe©2026</p>
+        <p>All rights reserved.</p>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- MODAL: CATAT SKOR (MULTISTEP)               -->
+    <!-- ========================================== -->
+    <div id="modal-record" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-mjgreen/20 space-y-5 animate-fadeIn">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-mjbg pb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="text-lg">🀄</span>
+                    <h3 class="font-bold text-mjgreen text-lg">Catat Skor Ronde</h3>
+                </div>
+                <button onclick="closeRecordModal()" class="text-gray-400 hover:text-gray-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Step Indicators -->
+            <div class="flex items-center justify-between px-2">
+                <div id="step-dot-1" class="flex-1 text-center font-bold text-xs pb-1 border-b-2 border-mjgreen text-mjgreen">1. Pemenang</div>
+                <div id="step-dot-2" class="flex-1 text-center font-bold text-xs pb-1 border-b-2 border-gray-200 text-gray-400">2. Tipe Kemenangan</div>
+                <div id="step-dot-3" class="flex-1 text-center font-bold text-xs pb-1 border-b-2 border-gray-200 text-gray-400">3. Poin</div>
+            </div>
+
+            <!-- STEP 1: PILIH PEMENANG -->
+            <div id="record-step-1" class="space-y-4">
+                <p class="text-sm font-semibold text-center text-mjtext">Siapa yang menang?</p>
+                <div class="grid grid-cols-2 gap-3" id="winner-selection-grid">
+                    <!-- Dynamic Winner Buttons -->
+                </div>
+            </div>
+
+            <!-- STEP 2: TIPE KEMENANGAN & BUANGAN SIAPA -->
+            <div id="record-step-2" class="hidden space-y-4">
+                <div class="text-center">
+                    <span class="text-xs bg-mjlight text-mjgreen px-2.5 py-1 rounded-full font-bold" id="selected-winner-badge">Pemenang: Budi</span>
+                </div>
+                <p class="text-sm font-semibold text-center text-mjtext">Pilih Tipe Kemenangan:</p>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="selectWinType('cumo')" class="p-4 rounded-2xl border-2 border-mjgreen/30 hover:border-mjgreen bg-mjbg/50 hover:bg-mjlight flex flex-col items-center justify-center space-y-2 transition">
+                        <span class="text-2xl">🏆</span>
+                        <span class="font-bold text-mjgreen">Cu Mo</span>
+                        <span class="text-[10px] text-mjtext/70 text-center">Menang Sendiri / Self-Draw</span>
+                    </button>
+                    <button onclick="selectWinType('buangan')" class="p-4 rounded-2xl border-2 border-mjgreen/30 hover:border-mjgreen bg-mjbg/50 hover:bg-mjlight flex flex-col items-center justify-center space-y-2 transition">
+                        <span class="text-2xl">🎯</span>
+                        <span class="font-bold text-mjgreen">Buangan</span>
+                        <span class="text-[10px] text-mjtext/70 text-center">Menang Tile Lemparan</span>
+                    </button>
+                </div>
+
+                <!-- Sub-step jika memilih Buangan -->
+                <div id="discard-selector-container" class="hidden pt-2 border-t border-gray-100 space-y-2">
+                    <p class="text-sm font-semibold text-center text-mjtext">Buangan siapa?</p>
+                    <div class="grid grid-cols-2 gap-2" id="discarder-selection-grid">
+                        <!-- Dynamic Discarder Buttons -->
+                    </div>
+                </div>
+
+                <div class="flex justify-start pt-2">
+                    <button onclick="goToStep(1)" class="text-xs font-semibold text-gray-500 hover:text-mjgreen flex items-center space-x-1">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        <span>Kembali</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 3: INPUT POIN KEMENANGAN -->
+            <div id="record-step-3" class="hidden space-y-4">
+                <div class="text-center space-y-1">
+                    <div class="text-xs bg-mjlight text-mjgreen px-2.5 py-1 rounded-full font-bold inline-block" id="summary-win-type">Cu Mo</div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-center text-mjtext">MASUKKAN POIN KEMENANGAN</label>
+                    <input type="number" id="win-points-input" min="5" step="1" placeholder="Berapa (台) Tay?" oninput="hidePointsError()"
+                        class="w-full text-center text-2xl font-black py-3 rounded-2xl border-2 border-mjgreen focus:ring-4 focus:ring-mjgreen/20 outline-none bg-mjbg text-mjgreen">
+                    <p id="win-points-error" class="hidden text-xs font-semibold text-center text-mjdanger">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i>Minimal 5 tay untuk Hu. Silakan input angka 5 atau lebih.
+                    </p>
+                </div>
+
+                <!-- Formula Preview Box -->
+                <div class="bg-mjbg p-3 rounded-xl border border-mjgreen/10 text-xs text-mjtext/80 space-y-1 font-mono" id="formula-preview">
+                    <!-- Dynamic preview message -->
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="goToStep(2)" class="text-xs font-semibold text-gray-500 hover:text-mjgreen flex items-center space-x-1">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        <span>Kembali</span>
+                    </button>
+
+                    <button onclick="submitScore()" class="bg-mjgreen hover:bg-mjaccent text-white font-bold py-2.5 px-6 rounded-xl btn-shadow transition text-sm">
+                        Simpan Skor
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: KONFIRMASI RESET (ULANGI DARI AWAL) -->
+    <!-- ========================================== -->
+    <div id="modal-reset" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-mjdanger/20 text-center space-y-4 animate-fadeIn">
+            <div class="w-12 h-12 bg-red-100 text-mjdanger rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            
+            <div class="space-y-1">
+                <h3 class="font-bold text-lg text-gray-800">ULANGI DARI AWAL?</h3>
+                <p class="text-xs text-gray-500">Semua nama pemain dan riwayat skor akan terhapus dan direset ke 0.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="closeResetModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition">
+                    TIDAK
+                </button>
+                <button onclick="resetApp()" class="w-full bg-mjdanger hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition btn-shadow">
+                    YA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: IMBANG                               -->
+    <!-- ========================================== -->
+    <div id="modal-draw" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-mjgreen/20 text-center space-y-4 animate-fadeIn">
+            <div class="w-12 h-12 bg-mjlight text-mjgreen rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-handshake"></i>
+            </div>
+            <h3 class="font-black text-2xl tracking-wider text-mjgreen">IMBANG</h3>
+            <p class="text-sm font-semibold text-mjtext">Angin Ronde: <span id="draw-round-wind"></span></p>
+            <div id="draw-player-list" class="bg-mjbg rounded-xl p-3 text-sm space-y-1.5 text-left">
+                <!-- Dynamic player list -->
+            </div>
+            <button onclick="closeDrawModal()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-bold py-2.5 rounded-xl text-sm transition btn-shadow">
+                TUTUP
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: KONFIRMASI PERMAINAN SELESAI         -->
+    <!-- ========================================== -->
+    <div id="modal-finish" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-mjgold/30 text-center space-y-4 animate-fadeIn">
+            <div class="w-12 h-12 bg-amber-100 text-mjgold rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-flag-checkered"></i>
+            </div>
+            <div class="space-y-1">
+                <h3 class="font-bold text-lg text-gray-800">SELESAIKAN PERMAINAN?</h3>
+                <p class="text-xs text-gray-500">Pertandingan akan diakhiri dan skor akhir hari ini ditampilkan.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="closeFinishModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition">
+                    TIDAK
+                </button>
+                <button onclick="finishGame()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-bold py-2.5 rounded-xl text-sm transition btn-shadow">
+                    YA, SELESAI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: PENALTI                              -->
+    <!-- ========================================== -->
+    <div id="modal-penalty" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-mjdanger/20 text-center space-y-4 animate-fadeIn">
+            <div class="w-12 h-12 bg-red-100 text-mjdanger rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="font-black text-2xl tracking-wider text-mjdanger">PENALTI</h3>
+
+            <div class="space-y-2">
+                <p class="text-sm font-semibold text-mjtext">Siapa yang mendapat penalti?</p>
+                <div class="grid grid-cols-2 gap-2" id="penalty-player-grid">
+                    <!-- Dynamic player buttons -->
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <p class="text-sm font-semibold text-mjtext">Penalti berapa poin?</p>
+                <input type="number" id="penalty-points-input" value="10" min="1" step="1" inputmode="numeric" placeholder="10" oninput="hidePenaltyError()"
+                    class="w-full text-center text-2xl font-black py-3 rounded-2xl border-2 border-mjdanger/60 focus:border-mjdanger focus:ring-4 focus:ring-mjdanger/20 outline-none bg-mjbg text-mjdanger">
+            </div>
+
+            <p id="penalty-error" class="hidden text-xs font-semibold text-mjdanger">
+                <i class="fa-solid fa-circle-exclamation mr-1"></i><span></span>
+            </p>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="closePenaltyModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition">
+                    BATAL
+                </button>
+                <button onclick="submitPenalty()" class="w-full bg-mjdanger hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition btn-shadow">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: UBAH NAMA PEMAIN                     -->
+    <!-- ========================================== -->
+    <div id="modal-rename" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-mjgreen/20 text-center space-y-4 animate-fadeIn">
+            <h3 class="font-black text-xl tracking-wider text-mjgreen">UBAH NAMA</h3>
+            <input type="text" id="rename-input" maxlength="20" onkeydown="if(event.key==='Enter')saveRename()"
+                class="w-full text-center text-lg font-bold py-3 rounded-2xl border-2 border-mjgreen/40 focus:border-mjgreen focus:ring-4 focus:ring-mjgreen/20 outline-none bg-mjbg text-mjgreen">
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="closeRenameModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition">BATAL</button>
+                <button onclick="saveRename()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-bold py-2.5 rounded-xl text-sm transition btn-shadow">SIMPAN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screenshot library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Application Script -->
+    <script>
+        // State Application
+        let players = []; // Array of objects: { id: 0..3, name: '', score: 0 }
+        let roundHistory = []; // Array of round log objects
+        let currentRound = 1;
+        let startedAt = null; // timestamp (ms) when "Mulai Permainan" was pressed
+        let finishedAt = null; // timestamp (ms) when the game was finished
+
+        // Winds: index 0..3 = 東 Timur, 南 Selatan, 西 Barat, 北 Utara
+        const WINDS = [
+            { char: '東', name: 'Timur' },
+            { char: '南', name: 'Selatan' },
+            { char: '西', name: 'Barat' },
+            { char: '北', name: 'Utara' }
+        ];
+
+        // Fixed counter-clockwise layout for 2-column grids: P1 top-left, P4 top-right, P2 bottom-left, P3 bottom-right
+        const SEAT_ORDER = [0, 3, 1, 2];
+        const MIN_WIN_POINTS = 5;
+
+        // Seat & round winds are derived from history so that undo restores them automatically.
+        // The dealer (東 seat) passes to the next player every time a round ends without the dealer winning.
+        function getDealerRotations() {
+            return roundHistory.filter(r => r.dealerRotated).length;
+        }
+
+        function getDealerIndex() {
+            return getDealerRotations() % 4;
+        }
+
+        function getRoundWindIndex() {
+            return Math.floor(getDealerRotations() / 4) % 4;
+        }
+
+        function getSeatWindIndex(playerIdx) {
+            return (playerIdx - getDealerIndex() + 4) % 4;
+        }
+
+        function formatWind(idx) {
+            return `${WINDS[idx].char} ${WINDS[idx].name}`;
+        }
+
+        // Temporary Record Form State
+        let selectedWinnerIndex = null;
+        let selectedWinType = null; // 'cumo' | 'buangan'
+        let selectedDiscarderIndex = null;
+
+        // --- PERSISTENCE (localStorage) ---
+        const STORAGE_KEY = 'skor-mahjong-state';
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ players, roundHistory, currentRound, startedAt, finishedAt }));
+            } catch (err) {
+                // Storage unavailable (e.g. private mode); continue without persistence
+            }
+        }
+
+        function clearState() {
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+            } catch (err) {}
+        }
+
+        function loadState() {
+            try {
+                const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (data && Array.isArray(data.players) && data.players.length === 4) {
+                    players = data.players;
+                    roundHistory = Array.isArray(data.roundHistory) ? data.roundHistory : [];
+                    currentRound = Number.isInteger(data.currentRound) ? data.currentRound : roundHistory.length + 1;
+                    startedAt = data.startedAt || Date.now();
+                    finishedAt = data.finishedAt || null;
+                    return true;
+                }
+            } catch (err) {}
+            return false;
+        }
+
+        function showDashboard() {
+            document.getElementById('screen-setup').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.remove('hidden');
+            document.getElementById('round-counter-badge').classList.remove('hidden');
+
+            renderScoreboard();
+            renderHistory();
+        }
+
+        // Initial Load: restore an ongoing game if one was saved
+        window.onload = function() {
+            if (loadState()) {
+                players.forEach((player, idx) => {
+                    const input = document.getElementById(`p${idx + 1}-input`);
+                    if (input) input.value = player.name;
+                });
+                if (finishedAt) {
+                    showFinalScreen();
+                } else {
+                    showDashboard();
+                }
+            }
+        };
+
+        // --- GAME INITIALIZATION ---
+        function startGame(e) {
+            e.preventDefault();
+            const p1 = document.getElementById('p1-input').value.trim() || 'Pemain 1';
+            const p2 = document.getElementById('p2-input').value.trim() || 'Pemain 2';
+            const p3 = document.getElementById('p3-input').value.trim() || 'Pemain 3';
+            const p4 = document.getElementById('p4-input').value.trim() || 'Pemain 4';
+
+            players = [
+                { id: 0, name: p1, score: 0 },
+                { id: 1, name: p2, score: 0 },
+                { id: 2, name: p3, score: 0 },
+                { id: 3, name: p4, score: 0 }
+            ];
+
+            roundHistory = [];
+            currentRound = 1;
+            startedAt = Date.now();
+            finishedAt = null;
+
+            saveState();
+            showDashboard();
+        }
+
+        // --- RENDER SCOREBOARD ---
+        function renderScoreboard() {
+            document.getElementById('current-round-num').innerText = currentRound;
+            const roundWind = WINDS[getRoundWindIndex()];
+            document.getElementById('round-wind-char').innerText = roundWind.char;
+            document.getElementById('round-wind-name').innerText = roundWind.name;
+            const container = document.getElementById('scoreboard-grid');
+            container.innerHTML = '';
+
+            // Find highest score for badge highlight
+            const maxScore = Math.max(...players.map(p => p.score));
+            const hasLeader = players.some(p => p.score !== 0) && players.filter(p => p.score === maxScore).length === 1;
+
+            // Fixed counter-clockwise seating: P1 top-left, P2 bottom-left, P3 bottom-right, P4 top-right
+            SEAT_ORDER.forEach((idx) => {
+                const player = players[idx];
+                const isLeader = hasLeader && player.score === maxScore;
+                const seatWind = getSeatWindIndex(idx);
+                const windBadge = seatWind === 0
+                    ? `<span class="inline-flex items-center space-x-1 bg-mjdanger text-white rounded-lg px-1.5 py-0.5 shadow-sm ring-2 ring-red-200"><span class="text-base font-black leading-none">${WINDS[0].char}</span><span class="text-[9px] font-black uppercase tracking-wider">Bandar</span></span>`
+                    : `<span class="inline-flex items-center justify-center border border-mjgreen/30 text-mjgreen/70 rounded-lg w-7 h-6 text-sm font-bold leading-none">${WINDS[seatWind].char}</span>`;
+
+                const cardHtml = `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border ${isLeader ? 'border-mjgold border-2 bg-gradient-to-b from-amber-50/30 to-white' : (seatWind === 0 ? 'border-mjdanger/40 border-2' : 'border-mjgreen/15')} relative transition-all duration-300">
+                        ${isLeader ? '<span class="absolute -top-2.5 right-3 bg-mjgold text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm"><i class="fa-solid fa-crown mr-1"></i>Memimpin</span>' : ''}
+                        
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <button type="button" onclick="openRenameModal(${idx})" title="Ubah nama" class="text-xs font-semibold text-mjgreen/70 uppercase tracking-wide truncate text-left hover:text-mjgreen">
+                                ${idx === 0 ? '<span class="text-mjdanger" title="East Origin">▲</span> ' : ''}${escapeHtml(player.name)}
+                            </button>
+                            ${windBadge}
+                        </div>
+
+                        <div class="text-3xl md:text-4xl font-black ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'} tracking-tight my-1">
+                            ${player.score > 0 ? '+' + player.score : player.score}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // --- RECORD SCORE MODAL STEPS & LOGIC ---
+        function openRecordModal() {
+            selectedWinnerIndex = null;
+            selectedWinType = null;
+            selectedDiscarderIndex = null;
+            document.getElementById('win-points-input').value = '';
+            hidePointsError();
+
+            // Populate Winner Grid (Step 1), same counter-clockwise layout as the scoreboard
+            const winnerGrid = document.getElementById('winner-selection-grid');
+            winnerGrid.innerHTML = '';
+            SEAT_ORDER.forEach((idx) => {
+                const player = players[idx];
+                winnerGrid.innerHTML += `
+                    <button onclick="selectWinner(${idx})" class="p-3.5 rounded-xl border-2 border-mjgreen/20 hover:border-mjgreen bg-mjbg/40 hover:bg-mjlight text-mjgreen font-bold text-sm transition flex items-center justify-between">
+                        <span class="truncate">${escapeHtml(player.name)}</span>
+                        <i class="fa-solid fa-trophy text-mjgold opacity-0 hover:opacity-100 transition"></i>
+                    </button>
+                `;
+            });
+
+            goToStep(1);
+            document.getElementById('modal-record').classList.remove('hidden');
+        }
+
+        function closeRecordModal() {
+            document.getElementById('modal-record').classList.add('hidden');
+        }
+
+        function goToStep(stepNum) {
+            document.getElementById('record-step-1').classList.add('hidden');
+            document.getElementById('record-step-2').classList.add('hidden');
+            document.getElementById('record-step-3').classList.add('hidden');
+
+            // Reset dots
+            [1, 2, 3].forEach(n => {
+                const dot = document.getElementById(`step-dot-${n}`);
+                if (n === stepNum) {
+                    dot.className = "flex-1 text-center font-bold text-xs pb-1 border-b-2 border-mjgreen text-mjgreen";
+                } else if (n < stepNum) {
+                    dot.className = "flex-1 text-center font-semibold text-xs pb-1 border-b-2 border-mjgreen/40 text-mjgreen/70";
+                } else {
+                    dot.className = "flex-1 text-center font-semibold text-xs pb-1 border-b-2 border-gray-200 text-gray-400";
+                }
+            });
+
+            document.getElementById(`record-step-${stepNum}`).classList.remove('hidden');
+        }
+
+        function selectWinner(playerIdx) {
+            selectedWinnerIndex = playerIdx;
+            document.getElementById('selected-winner-badge').innerText = `Pemenang: ${players[playerIdx].name}`;
+            
+            // Hide sub-container for discarder
+            document.getElementById('discard-selector-container').classList.add('hidden');
+            selectedWinType = null;
+            selectedDiscarderIndex = null;
+
+            goToStep(2);
+        }
+
+        function selectWinType(type) {
+            selectedWinType = type;
+
+            if (type === 'buangan') {
+                // Populate Discarder buttons in the counter-clockwise layout; the winner's slot is shown disabled
+                const discarderGrid = document.getElementById('discarder-selection-grid');
+                discarderGrid.innerHTML = '';
+                SEAT_ORDER.forEach((idx) => {
+                    const player = players[idx];
+                    if (idx === selectedWinnerIndex) {
+                        discarderGrid.innerHTML += `
+                            <div class="p-2.5 rounded-xl border border-dashed border-gray-200 bg-gray-50 text-gray-300 font-semibold text-xs text-center truncate">
+                                ${escapeHtml(player.name)} <span class="text-[9px] uppercase">(Pemenang)</span>
+                            </div>
+                        `;
+                    } else {
+                        discarderGrid.innerHTML += `
+                            <button id="discarder-btn-${idx}" onclick="selectDiscarder(${idx})" class="discarder-btn p-2.5 rounded-xl border border-mjgreen/30 hover:border-mjgreen bg-white text-mjgreen font-semibold text-xs transition truncate">
+                                ${escapeHtml(player.name)}
+                            </button>
+                        `;
+                    }
+                });
+                document.getElementById('discard-selector-container').classList.remove('hidden');
+            } else {
+                // Cu Mo directly goes to step 3
+                prepareStep3();
+            }
+        }
+
+        function selectDiscarder(playerIdx) {
+            selectedDiscarderIndex = playerIdx;
+            // Highlight selected discarder button
+            document.querySelectorAll('.discarder-btn').forEach(btn => {
+                btn.classList.remove('bg-mjgreen', 'text-white');
+                btn.classList.add('bg-white', 'text-mjgreen');
+            });
+            const selectedBtn = document.getElementById(`discarder-btn-${playerIdx}`);
+            if (selectedBtn) {
+                selectedBtn.classList.remove('bg-white', 'text-mjgreen');
+                selectedBtn.classList.add('bg-mjgreen', 'text-white');
+            }
+
+            setTimeout(() => {
+                prepareStep3();
+            }, 150);
+        }
+
+        function prepareStep3() {
+            const winnerName = players[selectedWinnerIndex].name;
+            const badge = document.getElementById('summary-win-type');
+            const formulaPreview = document.getElementById('formula-preview');
+
+            if (selectedWinType === 'cumo') {
+                badge.innerText = `🏆 ${winnerName} (Cu Mo)`;
+                formulaPreview.innerHTML = `
+                    <div class="font-bold text-mjgreen mb-1">Rumus Cu Mo:</div>
+                    <div>• Semua pemain lain bayar Tay kali 2</div>
+                    <div>• Pemenang (${escapeHtml(winnerName)}) mendapat Tay kali 6</div>
+                `;
+            } else {
+                const discarderName = players[selectedDiscarderIndex].name;
+                const otherNames = players
+                    .filter((_, idx) => idx !== selectedWinnerIndex && idx !== selectedDiscarderIndex)
+                    .map(p => escapeHtml(p.name))
+                    .join(' dan ');
+                badge.innerText = `🎯 ${winnerName} (Buangan dari ${discarderName})`;
+                formulaPreview.innerHTML = `
+                    <div class="font-bold text-mjgreen mb-1">Rumus Buangan:</div>
+                    <div>• Pembuang (${escapeHtml(discarderName)}) bayar Tay kali 2</div>
+                    <div>• Pemain lain (${otherNames}) bayar Tay kali 1</div>
+                    <div>• Pemenang (${escapeHtml(winnerName)}) mendapat Tay kali 4</div>
+                `;
+            }
+
+            goToStep(3);
+        }
+
+        function hidePointsError() {
+            document.getElementById('win-points-error').classList.add('hidden');
+        }
+
+        function submitScore() {
+            const pointsInput = document.getElementById('win-points-input');
+            const points = parseInt(pointsInput.value);
+
+            if (isNaN(points) || points < MIN_WIN_POINTS) {
+                document.getElementById('win-points-error').classList.remove('hidden');
+                pointsInput.focus();
+                return;
+            }
+
+            // Calculation Logic
+            const deltaScores = [0, 0, 0, 0];
+            let roundDetailsText = "";
+
+            if (selectedWinType === 'cumo') {
+                const roundScore = points * 2;
+                players.forEach((_, idx) => {
+                    if (idx === selectedWinnerIndex) {
+                        deltaScores[idx] = roundScore * 3;
+                    } else {
+                        deltaScores[idx] = -roundScore;
+                    }
+                });
+                roundDetailsText = `${players[selectedWinnerIndex].name} menang Cu Mo (Tay: ${points})`;
+            } else if (selectedWinType === 'buangan') {
+                players.forEach((_, idx) => {
+                    if (idx === selectedWinnerIndex) {
+                        deltaScores[idx] = points * 4;
+                    } else if (idx === selectedDiscarderIndex) {
+                        deltaScores[idx] = -(points * 2);
+                    } else {
+                        deltaScores[idx] = -points;
+                    }
+                });
+                roundDetailsText = `${players[selectedWinnerIndex].name} menang Buangan dari ${players[selectedDiscarderIndex].name} (Tay: ${points})`;
+            }
+
+            // Apply scores
+            players.forEach((player, idx) => {
+                player.score += deltaScores[idx];
+            });
+
+            // Save History
+            const dealerIdx = getDealerIndex();
+            roundHistory.push({
+                round: currentRound,
+                winType: selectedWinType,
+                roundWind: getRoundWindIndex(),
+                dealerIndex: dealerIdx,
+                dealerRotated: selectedWinnerIndex !== dealerIdx,
+                winnerIndex: selectedWinnerIndex,
+                winnerName: players[selectedWinnerIndex].name,
+                discarderName: selectedWinType === 'buangan' ? players[selectedDiscarderIndex].name : null,
+                points: points,
+                details: roundDetailsText,
+                deltaScores: deltaScores
+            });
+
+            currentRound++;
+            saveState();
+
+            renderScoreboard();
+            renderHistory();
+            closeRecordModal();
+            scrollToTop();
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- DRAW (IMBANG) ---
+        function recordDraw() {
+            const roundWind = getRoundWindIndex();
+            const dealerIdx = getDealerIndex();
+
+            roundHistory.push({
+                round: currentRound,
+                winType: 'imbang',
+                roundWind: roundWind,
+                dealerIndex: dealerIdx,
+                dealerRotated: true, // dealer did not win
+                winnerIndex: null,
+                winnerName: null,
+                discarderName: null,
+                points: 0,
+                details: 'Ronde imbang',
+                deltaScores: [0, 0, 0, 0]
+            });
+
+            currentRound++;
+            saveState();
+            renderScoreboard();
+            renderHistory();
+
+            document.getElementById('draw-round-wind').innerText = formatWind(roundWind);
+            document.getElementById('draw-player-list').innerHTML = players.map(p => `
+                <div class="flex justify-between font-semibold text-mjgreen">
+                    <span class="truncate">${escapeHtml(p.name)}</span>
+                    <span>= +0</span>
+                </div>
+            `).join('');
+            document.getElementById('modal-draw').classList.remove('hidden');
+            scrollToTop();
+        }
+
+        function closeDrawModal() {
+            document.getElementById('modal-draw').classList.add('hidden');
+        }
+
+        // --- FINISH GAME ---
+        function openFinishModal() {
+            document.getElementById('modal-finish').classList.remove('hidden');
+        }
+
+        function closeFinishModal() {
+            document.getElementById('modal-finish').classList.add('hidden');
+        }
+
+        function finishGame() {
+            closeFinishModal();
+            finishedAt = Date.now();
+            saveState();
+            showFinalScreen();
+        }
+
+        function formatDuration(ms) {
+            const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return hours > 0 ? `${hours} jam ${minutes} menit` : `${minutes} menit`;
+        }
+
+        // Returns "Name1, Name2 (value)" for all entries sharing the highest value
+        function describeTopEntries(entries) {
+            if (entries.length === 0) return '-';
+            const top = Math.max(...entries.map(e => e.value));
+            const names = [...new Set(entries.filter(e => e.value === top).map(e => e.name))];
+            return `${names.map(escapeHtml).join(', ')} (${top})`;
+        }
+
+        function showFinalScreen() {
+            document.getElementById('screen-setup').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('round-counter-badge').classList.add('hidden');
+            document.getElementById('screen-final').classList.remove('hidden');
+
+            const endDate = new Date(finishedAt);
+            document.getElementById('final-date').innerText = endDate.toLocaleDateString('id-ID', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+            document.getElementById('final-start-time').innerText = new Date(startedAt).toLocaleTimeString('id-ID', {
+                hour: '2-digit', minute: '2-digit'
+            });
+            document.getElementById('final-duration').innerText = formatDuration(finishedAt - startedAt);
+            document.getElementById('final-rounds').innerText = roundHistory.filter(r => r.winType !== 'penalti' || r.endsRound).length;
+
+            // Ranking: highest total score first (ties share the same rank)
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+            const medal = ['bg-mjgold text-white', 'bg-gray-400 text-white', 'bg-amber-700 text-white', 'bg-mjgreen/15 text-mjgreen'];
+            document.getElementById('final-ranking').innerHTML = sorted.map((player, i) => {
+                const rank = sorted.findIndex(p => p.score === player.score) + 1;
+                const isTop = rank === 1;
+                return `
+                    <div class="flex items-center bg-white rounded-2xl p-3.5 shadow-sm border ${isTop ? 'border-mjgold border-2' : 'border-mjgreen/15'}">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${medal[rank - 1]} shrink-0">${rank}</div>
+                        <div class="final-name flex-1 min-w-0 px-3 py-0.5 font-bold text-mjgreen text-lg leading-normal truncate">${escapeHtml(player.name)}</div>
+                        <div class="text-3xl font-black tracking-tight ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'}">${player.score > 0 ? '+' + player.score : player.score}</div>
+                    </div>
+                `;
+            }).join('');
+
+            const winRounds = roundHistory.filter(r => r.winType === 'cumo' || r.winType === 'buangan');
+            document.getElementById('final-biggest-hand').innerHTML = describeTopEntries(
+                winRounds.map(r => ({ name: r.winnerName, value: r.points }))
+            );
+            document.getElementById('final-biggest-round').innerHTML = describeTopEntries(
+                winRounds.map(r => ({ name: r.winnerName, value: Math.max(...r.deltaScores) }))
+            );
+        }
+
+        // --- SCREENSHOT: SHARE & SAVE ---
+        async function captureFinal() {
+            if (typeof html2canvas === 'undefined') {
+                alert('Fitur screenshot belum siap. Periksa koneksi internet lalu coba lagi.');
+                return null;
+            }
+            const canvas = await html2canvas(document.getElementById('final-capture'), {
+                backgroundColor: '#F9F5F1',
+                scale: Math.max(2, window.devicePixelRatio || 1),
+                onclone: (doc) => {
+                    doc.querySelectorAll('#final-capture .final-name').forEach(el => {
+                        el.style.overflow = 'visible';
+                        el.style.whiteSpace = 'normal';
+                        el.style.wordBreak = 'break-word';
+                    });
+                }
+            });
+            return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        }
+
+        function finalFileName() {
+            const d = new Date(finishedAt || Date.now());
+            const pad = n => String(n).padStart(2, '0');
+            return `skor-mahjong-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.png`;
+        }
+
+        function downloadBlob(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = finalFileName();
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        async function shareFinal() {
+            try {
+                const blob = await captureFinal();
+                if (!blob) return;
+                const file = new File([blob], finalFileName(), { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: 'SKOR MAHJONG HARI INI' });
+                } else {
+                    alert('Perangkat ini tidak mendukung berbagi gambar. Gambar akan disimpan sebagai gantinya.');
+                    downloadBlob(blob);
+                }
+            } catch (err) {
+                if (err && err.name === 'AbortError') return; // user cancelled share sheet
+                alert('Gagal membagikan gambar.');
+            }
+        }
+
+        async function saveFinal() {
+            try {
+                const blob = await captureFinal();
+                if (!blob) return;
+                // iOS browsers can't write to Photos via download; the share sheet offers "Simpan Gambar"
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                const file = new File([blob], finalFileName(), { type: 'image/png' });
+                if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file] });
+                } else {
+                    downloadBlob(blob);
+                }
+            } catch (err) {
+                if (err && err.name === 'AbortError') return;
+                alert('Gagal menyimpan gambar.');
+            }
+        }
+
+        // --- HISTORY & UNDO LOGIC ---
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            const undoBtn = document.getElementById('btn-undo');
+
+            if (roundHistory.length === 0) {
+                container.innerHTML = `<p class="text-xs text-center text-gray-400 py-4 italic">Belum ada skor yang dicatat.</p>`;
+                undoBtn.classList.add('hidden');
+                return;
+            }
+
+            undoBtn.classList.remove('hidden');
+            container.innerHTML = '';
+
+            // Render reversed (latest on top)
+            [...roundHistory].reverse().forEach((item) => {
+                const changes = item.deltaScores.map((ds, i) => `${players[i].name}: ${ds > 0 ? '+' + ds : ds}`).join(' | ');
+                const isPenalty = item.winType === 'penalti';
+                const typeLabel = item.winType === 'cumo' ? '🏆 Cu Mo'
+                    : item.winType === 'imbang' ? '🤝 Imbang'
+                    : isPenalty ? '⚠️ Penalti'
+                    : '🎯 Buangan';
+
+                const logHtml = `
+                    <div class="bg-mjbg/60 p-2.5 rounded-xl text-xs space-y-1 border border-mjgreen/10">
+                        <div class="flex items-center justify-between font-bold ${isPenalty ? 'text-mjdanger' : 'text-mjgreen'}">
+                            <span>${isPenalty && !item.endsRound ? `Penalti (Ronde ${item.round})` : `Ronde ${item.round}`}</span>
+                            <span class="text-[10px] font-medium bg-mjlight px-2 py-0.5 rounded-full">${typeof item.roundWind === 'number' ? WINDS[item.roundWind].char + ' · ' : ''}${typeLabel}</span>
+                        </div>
+                        <div class="text-gray-700 text-[11px]">${escapeHtml(describeRound(item))}</div>
+                        <div class="text-[10px] text-gray-500 font-mono pt-1 border-t border-gray-200/60 truncate">${escapeHtml(changes)}</div>
+                    </div>
+                `;
+                container.innerHTML += logHtml;
+            });
+        }
+
+        function undoLastRound() {
+            if (roundHistory.length === 0) return;
+
+            const lastRound = roundHistory.pop();
+            // Revert scores
+            lastRound.deltaScores.forEach((ds, idx) => {
+                players[idx].score -= ds;
+            });
+
+            if (lastRound.winType !== 'penalti' || lastRound.endsRound) currentRound--;
+            saveState();
+            renderScoreboard();
+            renderHistory();
+        }
+
+        // Builds the history description from round data so older saved rounds use the current wording
+        function describeRound(item) {
+            if (item.winType === 'cumo') {
+                return `${item.winnerName} menang Cu Mo (Tay: ${item.points})`;
+            }
+            if (item.winType === 'buangan') {
+                return `${item.winnerName} menang Buangan dari ${item.discarderName} (Tay: ${item.points})`;
+            }
+            return item.details;
+        }
+
+        // --- PENALTY (PENALTI) ---
+        let selectedPenaltyIndex = null;
+
+        function openPenaltyModal() {
+            selectedPenaltyIndex = null;
+            document.getElementById('penalty-points-input').value = '10';
+            hidePenaltyError();
+            renderPenaltyPlayers();
+            document.getElementById('modal-penalty').classList.remove('hidden');
+        }
+
+        function closePenaltyModal() {
+            document.getElementById('modal-penalty').classList.add('hidden');
+        }
+
+        function renderPenaltyPlayers() {
+            // Same counter-clockwise layout as the scoreboard
+            document.getElementById('penalty-player-grid').innerHTML = SEAT_ORDER.map((idx) => {
+                const selected = idx === selectedPenaltyIndex;
+                return `
+                    <button onclick="selectPenaltyPlayer(${idx})" class="p-3 rounded-xl border-2 font-bold text-sm transition truncate ${selected ? 'border-mjdanger bg-mjdanger text-white' : 'border-mjgreen/20 hover:border-mjdanger bg-mjbg/40 text-mjgreen'}">
+                        ${escapeHtml(players[idx].name)}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectPenaltyPlayer(idx) {
+            selectedPenaltyIndex = idx;
+            hidePenaltyError();
+            renderPenaltyPlayers();
+        }
+
+        function hidePenaltyError() {
+            document.getElementById('penalty-error').classList.add('hidden');
+        }
+
+        function showPenaltyError(message) {
+            const el = document.getElementById('penalty-error');
+            el.querySelector('span').innerText = message;
+            el.classList.remove('hidden');
+        }
+
+        function submitPenalty() {
+            if (selectedPenaltyIndex === null) {
+                showPenaltyError('Pilih pemain yang mendapat penalti.');
+                return;
+            }
+            const input = document.getElementById('penalty-points-input');
+            const points = parseInt(input.value);
+            if (isNaN(points) || points < 1) {
+                showPenaltyError('Masukkan nilai penalti minimal 1 poin.');
+                input.focus();
+                return;
+            }
+
+            const deltaScores = [0, 0, 0, 0];
+            deltaScores[selectedPenaltyIndex] = -points;
+            players[selectedPenaltyIndex].score -= points;
+
+            // A penalty ends the round: the seat winds pass to the next player, like a round without a dealer win
+            roundHistory.push({
+                round: currentRound,
+                winType: 'penalti',
+                roundWind: getRoundWindIndex(),
+                dealerIndex: getDealerIndex(),
+                dealerRotated: true,
+                endsRound: true,
+                winnerIndex: null,
+                winnerName: null,
+                discarderName: null,
+                penaltyIndex: selectedPenaltyIndex,
+                points: points,
+                details: `${players[selectedPenaltyIndex].name} kena penalti ${points} poin`,
+                deltaScores: deltaScores
+            });
+
+            currentRound++;
+            saveState();
+            renderScoreboard();
+            renderHistory();
+            closePenaltyModal();
+            scrollToTop();
+        }
+
+        // --- RENAME PLAYER ---
+        let renameIndex = null;
+
+        function openRenameModal(idx) {
+            renameIndex = idx;
+            const input = document.getElementById('rename-input');
+            input.value = players[idx].name;
+            document.getElementById('modal-rename').classList.remove('hidden');
+            input.focus();
+            input.select();
+        }
+
+        function closeRenameModal() {
+            document.getElementById('modal-rename').classList.add('hidden');
+            renameIndex = null;
+        }
+
+        function saveRename() {
+            if (renameIndex === null) return;
+            const name = document.getElementById('rename-input').value.trim();
+            if (!name) return;
+            players[renameIndex].name = name;
+            saveState();
+            renderScoreboard();
+            renderHistory();
+            closeRenameModal();
+        }
+
+        // --- RESET MODAL LOGIC ---
+        function openResetModal() {
+            document.getElementById('modal-reset').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('modal-reset').classList.add('hidden');
+        }
+
+        function resetApp() {
+            closeResetModal();
+            // Clear inputs
+            document.getElementById('p1-input').value = 'Budi';
+            document.getElementById('p2-input').value = 'Joseph';
+            document.getElementById('p3-input').value = 'Hansen';
+            document.getElementById('p4-input').value = 'Ramses';
+
+            players = [];
+            roundHistory = [];
+            currentRound = 1;
+            startedAt = null;
+            finishedAt = null;
+            clearState();
+
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-final').classList.add('hidden');
+            document.getElementById('round-counter-badge').classList.add('hidden');
+            document.getElementById('screen-setup').classList.remove('hidden');
+        }
+
+        // Helper: Escape HTML string
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
