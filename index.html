@@ -1615,6 +1615,9 @@
         function renderScorerPage5(content, footer) {
             const specials = [
                 { id: 'none', label: 'Tidak Ada Kondisi Spesial', desc: 'Perhitungan standar' },
+                { id: 'pyongpi1', label: 'Pyong Pi Hitung 1', desc: 'Sisa joker, kartu apa pun yang diambil jadi kaki/pair (langsung dibuka setelah liu) (+5 Poin)' },
+                { id: 'pyongpi4', label: 'Pyong Pi Hitung 4', desc: 'Dihitung sampai dengan putaran ke 4, di putaran 4 baru tambah poin, apabila dibatalkan sebelum putaran ke 4, tidak ditambahkan apapun (+10 Poin)' },
+                { id: 'pyongpi6', label: 'Pyong Pi Hitung 6', desc: 'Dihitung sampai dengan putaran ke 6, di putaran 6 baru tambah poin, apabila dibatalkan sebelum putaran ke 6, tidak ditambahkan apapun (+30 Poin)' },
                 { id: 'paochin', label: 'Pao Chin', desc: 'Begitu mulai buka kartu, kurang 1 kartu sebelum Hu (+20 dengan KIM / +30 tanpa KIM)' },
                 { id: 'sesampu', label: 'Se Sam Pu Tap (Thirteen Unconnected)', desc: 'Semua kartu tidak nyambung, tanpa kim (+40 Poin)' },
                 { id: 'capsayauw', label: 'Cap Sa Yauw (Thirteen Orphans)', desc: '1,9 Ban/Tong/Sok + 7 Surat (+40 dengan KIM / +60 tanpa KIM)' },
@@ -1840,6 +1843,25 @@
             if (nonKim.length <= 1) return true;
             if (nonKim.length === 2) return nonKim[0] === nonKim[1];
             return nonKim[0] === nonKim[1] && nonKim[1] === nonKim[2];
+        }
+
+        function isPairSet(tiles) {
+            if (!tiles || tiles.length !== 2 || tiles.includes(null)) return false;
+            let nonKim = tiles.filter(t => t !== 'kim');
+            if (nonKim.length <= 1) return true;
+            return nonKim[0] === nonKim[1];
+        }
+
+        function getTripletTargetTile(tiles) {
+            if (!isTripletSet(tiles)) return null;
+            let nonKim = tiles.filter(t => t !== 'kim');
+            return nonKim.length > 0 ? nonKim[0] : 'kim';
+        }
+
+        function getPairTargetTile(tiles) {
+            if (!isPairSet(tiles)) return null;
+            let nonKim = tiles.filter(t => t !== 'kim');
+            return nonKim.length > 0 ? nonKim[0] : 'kim';
         }
 
         function getTileType(tId) {
@@ -2175,9 +2197,25 @@
                 }
             }
 
+            // PEMERIKSAAN KARTU NAGA & ANGIN (PER SET & PAIR DENGAN DUKUNGAN KIM)
+            let tripletTiles = [];
+            let pairTargetTile = null;
+
+            if (scorerState.handMode === 'standard') {
+                for (let i = 0; i < 4; i++) {
+                    const target = getTripletTargetTile(scorerState.standardMelds[i].tiles);
+                    if (target) tripletTiles.push(target);
+                }
+                pairTargetTile = getPairTargetTile(scorerState.standardMelds[4].tiles);
+            }
+
+            // 1-3. Pung/Tris Naga Individual
             ['cung', 'fat', 'pai'].forEach(d => {
-                let cnt = allTiles.filter(t => t === d).length;
-                if (cnt >= 3) {
+                let hasTriplet = scorerState.handMode === 'standard'
+                    ? tripletTiles.includes(d)
+                    : allTiles.filter(t => t === d).length >= 3;
+
+                if (hasTriplet) {
                     let pts = d === 'cung' ? 2 : 1;
                     let name = d === 'cung' ? 'Naga Merah (Cung)' : d === 'fat' ? 'Naga Hijau (Fat)' : 'Naga Putih (Pai)';
                     totalScore += pts;
@@ -2185,20 +2223,61 @@
                 }
             });
 
+            // 4 & 5. Siau San Yen & Ta San Yen
+            if (scorerState.handMode === 'standard') {
+                const dragons = ['cung', 'fat', 'pai'];
+                let dragonTripletCount = dragons.filter(d => tripletTiles.includes(d)).length;
+                let hasDragonPair = dragons.includes(pairTargetTile);
+
+                if (dragonTripletCount === 3) {
+                    let pts = hasKim ? 30 : 40;
+                    totalScore += pts;
+                    items.push({ title: `Ta San Yen (Big Three Dragons) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+                } else if (dragonTripletCount === 2 && hasDragonPair) {
+                    let pts = hasKim ? 10 : 20;
+                    totalScore += pts;
+                    items.push({ title: `Siau San Yen (Small Three Dragons) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+                }
+            }
+
+            // 1 & 2. Pung/Tris Angin Duduk & Angin Meja
             const windMap = { 1: 'tung', 2: 'nan', 3: 'si', 4: 'pei' };
             let seatWindTile = windMap[scorerState.seatWind];
             let prevalentWindTile = windMap[scorerState.prevalentWind];
 
-            let seatCount = allTiles.filter(t => t === seatWindTile).length;
-            if (seatCount >= 3) {
+            let hasSeatWindTriplet = scorerState.handMode === 'standard'
+                ? tripletTiles.includes(seatWindTile)
+                : allTiles.filter(t => t === seatWindTile).length >= 3;
+
+            if (hasSeatWindTriplet) {
                 totalScore += 1;
                 items.push({ title: 'Pung Angin Duduk (Seat Wind)', pts: 1 });
             }
 
-            let prevalentCount = allTiles.filter(t => t === prevalentWindTile).length;
-            if (prevalentCount >= 3 && seatWindTile !== prevalentWindTile) {
+            let hasPrevalentWindTriplet = scorerState.handMode === 'standard'
+                ? tripletTiles.includes(prevalentWindTile)
+                : allTiles.filter(t => t === prevalentWindTile).length >= 3;
+
+            if (hasPrevalentWindTriplet && seatWindTile !== prevalentWindTile) {
                 totalScore += 1;
                 items.push({ title: 'Pung Angin Meja (Prevalent Wind)', pts: 1 });
+            }
+
+            // 3 & 4. Siau Se Si & Ta Se Si
+            if (scorerState.handMode === 'standard') {
+                const winds = ['tung', 'nan', 'si', 'pei'];
+                let windTripletCount = winds.filter(w => tripletTiles.includes(w)).length;
+                let hasWindPair = winds.includes(pairTargetTile);
+
+                if (windTripletCount === 4) {
+                    let pts = hasKim ? 50 : 60;
+                    totalScore += pts;
+                    items.push({ title: `Ta Se Si (Big Four Winds) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+                } else if (windTripletCount === 3 && hasWindPair) {
+                    let pts = hasKim ? 30 : 40;
+                    totalScore += pts;
+                    items.push({ title: `Siau Se Si (Small Four Winds) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+                }
             }
 
             const orphanTileIds = ['1_wan', '9_wan', '1_sok', '9_sok', '1_tong', '9_tong', 'tung', 'nan', 'si', 'pei', 'cung', 'fat', 'pai'];
@@ -2213,7 +2292,17 @@
                 }
             }
 
-            if (scorerState.specialHand === 'capsayauw' || isAutoCapSaYauw) {
+            // PEMERIKSAAN KONDISI SPESIAL
+            if (scorerState.specialHand === 'pyongpi1') {
+                totalScore += 5;
+                items.push({ title: 'Pyong Pi Hitung 1', pts: 5 });
+            } else if (scorerState.specialHand === 'pyongpi4') {
+                totalScore += 10;
+                items.push({ title: 'Pyong Pi Hitung 4', pts: 10 });
+            } else if (scorerState.specialHand === 'pyongpi6') {
+                totalScore += 30;
+                items.push({ title: 'Pyong Pi Hitung 6', pts: 30 });
+            } else if (scorerState.specialHand === 'capsayauw' || isAutoCapSaYauw) {
                 let pts = hasKim ? 40 : 60;
                 totalScore += pts;
                 items.push({ title: `Cap Sa Yauw (Thirteen Orphans) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
