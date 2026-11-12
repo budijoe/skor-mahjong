@@ -279,9 +279,9 @@
         <!-- ========================================== -->
         <section id="screen-dashboard" class="hidden space-y-6">
             
-            <!-- Angin Ronde -->
+            <!-- Angin Meja -->
             <div class="bg-white rounded-2xl px-4 py-3 shadow-sm border border-mjgreen/10 flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-mjgreen/70">Angin Ronde</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-mjgreen/70">Angin Meja</span>
                 <span class="flex items-center space-x-2">
                     <span id="round-wind-char" class="text-2xl font-black text-mjgreen leading-none">東</span>
                     <span id="round-wind-name" class="text-sm font-bold text-mjgreen">Timur</span>
@@ -526,7 +526,7 @@
                     <span class="text-xl">🀄</span>
                     <div>
                         <h2 class="text-sm font-black tracking-wider uppercase">COBA BUDI BANTU HITUNGKAN</h2>
-                        <p id="scorer-wind-subtitle" class="text-[10px] text-mjgold font-semibold">Angin Ronde: Timur | Angin Duduk: Timur</p>
+                        <p id="scorer-wind-subtitle" class="text-[10px] text-mjgold font-semibold">Angin Meja: Timur | Angin Duduk: Timur</p>
                     </div>
                 </div>
                 <button onclick="closeScorerModal()" class="text-white/80 hover:text-white p-1">
@@ -584,7 +584,7 @@
                 <i class="fa-solid fa-handshake"></i>
             </div>
             <h3 class="font-black text-2xl tracking-wider text-mjgreen">IMBANG</h3>
-            <p class="text-sm font-semibold text-mjtext">Angin Ronde: <span id="draw-round-wind"></span></p>
+            <p class="text-sm font-semibold text-mjtext">Angin Meja: <span id="draw-round-wind"></span></p>
             <div id="draw-player-list" class="bg-mjbg rounded-xl p-3 text-sm space-y-1.5 text-left">
                 <!-- Dynamic player list -->
             </div>
@@ -1118,57 +1118,56 @@
         // ==========================================
         // 2. YDSP HAND SCORER MODULE INTEGRATION
         // ==========================================
-        const SVG_BASE = "https://raw.githubusercontent.com/samoheen/mahjong-tiles/8b5a3cd35ef22bcdb1f7f09dc9926f733885f7b4/";
-        const SVG_MASTER = "https://raw.githubusercontent.com/samoheen/mahjong-tiles/master/";
+        const SVG_MASTER = "https://raw.githubusercontent.com/budijoe/skor-mahjong/main/";
 
         const flowerTiles = [
-            { id: 'f_red_1', name: '1 Merah', code: 'red1', img: SVG_BASE + 'vietnam/svg/35-spring.svg' },
-            { id: 'f_red_2', name: '2 Merah', code: 'red2', img: SVG_BASE + 'vietnam/svg/36-summer.svg' },
-            { id: 'f_red_3', name: '3 Merah', code: 'red3', img: SVG_BASE + 'vietnam/svg/37-autumn.svg' },
-            { id: 'f_red_4', name: '4 Merah', code: 'red4', img: SVG_BASE + 'vietnam/svg/38-winter.svg' },
-            { id: 'f_black_1', name: '1 Hitam', code: 'black1', img: SVG_BASE + 'vietnam/svg/39-plum.svg' },
-            { id: 'f_black_2', name: '2 Hitam', code: 'black2', img: SVG_BASE + 'vietnam/svg/40-orchid.svg' },
-            { id: 'f_black_3', name: '3 Hitam', code: 'black3', img: SVG_BASE + 'vietnam/svg/41-chrysanthemum.svg' },
-            { id: 'f_black_4', name: '4 Hitam', code: 'black4', img: SVG_BASE + 'vietnam/svg/42-bamboo.svg' }
+        	{ id: 'f_red_1', name: '1 Merah', code: 'red1', img: SVG_MASTER + 'svg/35-spring.svg' },
+        	{ id: 'f_red_2', name: '2 Merah', code: 'red2', img: SVG_MASTER + 'svg/36-summer.svg' },
+        	{ id: 'f_red_3', name: '3 Merah', code: 'red3', img: SVG_MASTER + 'svg/37-autumn.svg' },
+        	{ id: 'f_red_4', name: '4 Merah', code: 'red4', img: SVG_MASTER + 'svg/38-winter.svg' },
+        	{ id: 'f_black_1', name: '1 Hitam', code: 'black1', img: SVG_MASTER + 'svg/39-plum.svg' },
+        	{ id: 'f_black_2', name: '2 Hitam', code: 'black2', img: SVG_MASTER + 'svg/40-orchid.svg' },
+        	{ id: 'f_black_3', name: '3 Hitam', code: 'black3', img: SVG_MASTER + 'svg/41-chrysanthemum.svg' },
+        	{ id: 'f_black_4', name: '4 Hitam', code: 'black4', img: SVG_MASTER + 'svg/42-bamboo.svg' }
         ];
 
         const standardTiles = [
-            { id: '1_wan', label: '1 Wan', type: 'wan', val: 1, img: SVG_MASTER + 'vietnam/svg/08-characters-1.svg' },
-            { id: '2_wan', label: '2 Wan', type: 'wan', val: 2, img: SVG_MASTER + 'vietnam/svg/09-characters-2.svg' },
-            { id: '3_wan', label: '3 Wan', type: 'wan', val: 3, img: SVG_MASTER + 'vietnam/svg/10-characters-3.svg' },
-            { id: '4_wan', label: '4 Wan', type: 'wan', val: 4, img: SVG_MASTER + 'vietnam/svg/11-characters-4.svg' },
-            { id: '5_wan', label: '5 Wan', type: 'wan', val: 5, img: SVG_MASTER + 'vietnam/svg/12-characters-5.svg' },
-            { id: '6_wan', label: '6 Wan', type: 'wan', val: 6, img: SVG_MASTER + 'vietnam/svg/13-characters-6.svg' },
-            { id: '7_wan', label: '7 Wan', type: 'wan', val: 7, img: SVG_MASTER + 'vietnam/svg/14-characters-7.svg' },
-            { id: '8_wan', label: '8 Wan', type: 'wan', val: 8, img: SVG_MASTER + 'vietnam/svg/15-characters-8.svg' },
-            { id: '9_wan', label: '9 Wan', type: 'wan', val: 9, img: SVG_MASTER + 'vietnam/svg/16-characters-9.svg' },
-            { id: '1_sok', label: '1 Sok', type: 'sok', val: 1, img: SVG_MASTER + 'vietnam/svg/26-bamboos-1.svg' },
-            { id: '2_sok', label: '2 Sok', type: 'sok', val: 2, img: SVG_MASTER + 'vietnam/svg/27-bamboos-2.svg' },
-            { id: '3_sok', label: '3 Sok', type: 'sok', val: 3, img: SVG_MASTER + 'vietnam/svg/28-bamboos-3.svg' },
-            { id: '4_sok', label: '4 Sok', type: 'sok', val: 4, img: SVG_MASTER + 'vietnam/svg/29-bamboos-4.svg' },
-            { id: '5_sok', label: '5 Sok', type: 'sok', val: 5, img: SVG_MASTER + 'vietnam/svg/30-bamboos-5.svg' },
-            { id: '6_sok', label: '6 Sok', type: 'sok', val: 6, img: SVG_MASTER + 'vietnam/svg/31-bamboos-6.svg' },
-            { id: '7_sok', label: '7 Sok', type: 'sok', val: 7, img: SVG_MASTER + 'vietnam/svg/32-bamboos-7.svg' },
-            { id: '8_sok', label: '8 Sok', type: 'sok', val: 8, img: SVG_MASTER + 'vietnam/svg/33-bamboos-8.svg' },
-            { id: '9_sok', label: '9 Sok', type: 'sok', val: 9, img: SVG_MASTER + 'vietnam/svg/34-bamboos-9.svg' },
-            { id: '1_tong', label: '1 Tong', type: 'tong', val: 1, img: SVG_MASTER + 'vietnam/svg/17-circles-1-variant-4.svg' },
-            { id: '2_tong', label: '2 Tong', type: 'tong', val: 2, img: SVG_MASTER + 'vietnam/svg/18-circles-2.svg' },
-            { id: '3_tong', label: '3 Tong', type: 'tong', val: 3, img: SVG_MASTER + 'vietnam/svg/19-circles-3.svg' },
-            { id: '4_tong', label: '4 Tong', type: 'tong', val: 4, img: SVG_MASTER + 'vietnam/svg/20-circles-4.svg' },
-            { id: '5_tong', label: '5 Tong', type: 'tong', val: 5, img: SVG_MASTER + 'vietnam/svg/21-circles-5.svg' },
-            { id: '6_tong', label: '6 Tong', type: 'tong', val: 6, img: SVG_MASTER + 'vietnam/svg/22-circles-6.svg' },
-            { id: '7_tong', label: '7 Tong', type: 'tong', val: 7, img: SVG_MASTER + 'vietnam/svg/23-circles-7.svg' },
-            { id: '8_tong', label: '8 Tong', type: 'tong', val: 8, img: SVG_MASTER + 'vietnam/svg/24-circles-8.svg' },
-            { id: '9_tong', label: '9 Tong', type: 'tong', val: 9, img: SVG_MASTER + 'vietnam/svg/25-circles-9.svg' },
-            { id: 'cung', label: 'Cung (Red Dragon)', type: 'dragon', val: 'cung', img: SVG_MASTER + 'vietnam/svg/03-red-dragon.svg' },
-            { id: 'fat', label: 'Fat (Green Dragon)', type: 'dragon', val: 'fat', img: SVG_MASTER + 'vietnam/svg/02-green-dragon.svg' },
-            { id: 'pai', label: 'Pai (White Dragon)', type: 'dragon', val: 'pai', img: SVG_MASTER + 'vietnam/svg/01-white-dragon.svg' },
-            { id: 'tung', label: 'Tung (East)', type: 'wind', val: 1, img: SVG_MASTER + 'vietnam/svg/04-east-wind.svg' },
-            { id: 'nan', label: 'Nan (South)', type: 'wind', val: 2, img: SVG_MASTER + 'vietnam/svg/05-south-wind.svg' },
-            { id: 'si', label: 'Si (West)', type: 'wind', val: 3, img: SVG_MASTER + 'vietnam/svg/06-west-wind.svg' },
-            { id: 'pei', label: 'Pei (North)', type: 'wind', val: 4, img: SVG_MASTER + 'vietnam/svg/07-north-wind.svg' },
-            { id: 'kim', label: 'KIM / Joker', type: 'kim', val: 'kim', img: SVG_BASE + 'malaysia/svg/44-joker-clown.svg', span2: true }
-        ];
+        	{ id: '1_wan', label: '1 Wan', type: 'wan', val: 1, img: SVG_MASTER + 'svg/08-characters-1.svg' },
+        	{ id: '2_wan', label: '2 Wan', type: 'wan', val: 2, img: SVG_MASTER + 'svg/09-characters-2.svg' },
+        	{ id: '3_wan', label: '3 Wan', type: 'wan', val: 3, img: SVG_MASTER + 'svg/10-characters-3.svg' },
+        	{ id: '4_wan', label: '4 Wan', type: 'wan', val: 4, img: SVG_MASTER + 'svg/11-characters-4.svg' },
+        	{ id: '5_wan', label: '5 Wan', type: 'wan', val: 5, img: SVG_MASTER + 'svg/12-characters-5.svg' },
+        	{ id: '6_wan', label: '6 Wan', type: 'wan', val: 6, img: SVG_MASTER + 'svg/13-characters-6.svg' },
+        	{ id: '7_wan', label: '7 Wan', type: 'wan', val: 7, img: SVG_MASTER + 'svg/14-characters-7.svg' },
+        	{ id: '8_wan', label: '8 Wan', type: 'wan', val: 8, img: SVG_MASTER + 'svg/15-characters-8.svg' },
+        	{ id: '9_wan', label: '9 Wan', type: 'wan', val: 9, img: SVG_MASTER + 'svg/16-characters-9.svg' },
+        	{ id: '1_sok', label: '1 Sok', type: 'sok', val: 1, img: SVG_MASTER + 'svg/26-bamboos-1.svg' },
+        	{ id: '2_sok', label: '2 Sok', type: 'sok', val: 2, img: SVG_MASTER + 'svg/27-bamboos-2.svg' },
+        	{ id: '3_sok', label: '3 Sok', type: 'sok', val: 3, img: SVG_MASTER + 'svg/28-bamboos-3.svg' },
+        	{ id: '4_sok', label: '4 Sok', type: 'sok', val: 4, img: SVG_MASTER + 'svg/29-bamboos-4.svg' },
+        	{ id: '5_sok', label: '5 Sok', type: 'sok', val: 5, img: SVG_MASTER + 'svg/30-bamboos-5.svg' },
+        	{ id: '6_sok', label: '6 Sok', type: 'sok', val: 6, img: SVG_MASTER + 'svg/31-bamboos-6.svg' },
+        	{ id: '7_sok', label: '7 Sok', type: 'sok', val: 7, img: SVG_MASTER + 'svg/32-bamboos-7.svg' },
+        	{ id: '8_sok', label: '8 Sok', type: 'sok', val: 8, img: SVG_MASTER + 'svg/33-bamboos-8.svg' },
+        	{ id: '9_sok', label: '9 Sok', type: 'sok', val: 9, img: SVG_MASTER + 'svg/34-bamboos-9.svg' },
+        	{ id: '1_tong', label: '1 Tong', type: 'tong', val: 1, img: SVG_MASTER + 'svg/17-circles-1-variant-4.svg' },
+        	{ id: '2_tong', label: '2 Tong', type: 'tong', val: 2, img: SVG_MASTER + 'svg/18-circles-2.svg' },
+        	{ id: '3_tong', label: '3 Tong', type: 'tong', val: 3, img: SVG_MASTER + 'svg/19-circles-3.svg' },
+        	{ id: '4_tong', label: '4 Tong', type: 'tong', val: 4, img: SVG_MASTER + 'svg/20-circles-4.svg' },
+        	{ id: '5_tong', label: '5 Tong', type: 'tong', val: 5, img: SVG_MASTER + 'svg/21-circles-5.svg' },
+        	{ id: '6_tong', label: '6 Tong', type: 'tong', val: 6, img: SVG_MASTER + 'svg/22-circles-6.svg' },
+        	{ id: '7_tong', label: '7 Tong', type: 'tong', val: 7, img: SVG_MASTER + 'svg/23-circles-7.svg' },
+        	{ id: '8_tong', label: '8 Tong', type: 'tong', val: 8, img: SVG_MASTER + 'svg/24-circles-8.svg' },
+        	{ id: '9_tong', label: '9 Tong', type: 'tong', val: 9, img: SVG_MASTER + 'svg/25-circles-9.svg' },
+        	{ id: 'cung', label: 'Cung (Red Dragon)', type: 'dragon', val: 'cung', img: SVG_MASTER + 'svg/03-red-dragon.svg' },
+        	{ id: 'fat', label: 'Fat (Green Dragon)', type: 'dragon', val: 'fat', img: SVG_MASTER + 'svg/02-green-dragon.svg' },
+        	{ id: 'pai', label: 'Pai (White Dragon)', type: 'dragon', val: 'pai', img: SVG_MASTER + 'svg/01-white-dragon.svg' },
+        	{ id: 'tung', label: 'Tung (East)', type: 'wind', val: 1, img: SVG_MASTER + 'svg/04-east-wind.svg' },
+        	{ id: 'nan', label: 'Nan (South)', type: 'wind', val: 2, img: SVG_MASTER + 'svg/05-south-wind.svg' },
+	       	{ id: 'si', label: 'Si (West)', type: 'wind', val: 3, img: SVG_MASTER + 'svg/06-west-wind.svg' },
+        	{ id: 'pei', label: 'Pei (North)', type: 'wind', val: 4, img: SVG_MASTER + 'svg/07-north-wind.svg' },
+        	{ id: 'kim', label: 'KIM / Joker', type: 'kim', val: 'kim', img: SVG_MASTER + 'svg/44-joker-clown.svg', span2: true }
+    	];
 
         const windNamesMap = {
             1: '東 (East) 1',
@@ -1762,7 +1761,7 @@
 
                     <div class="bg-white rounded-xl p-2 text-xs font-bold text-mjgreen flex justify-around text-center border border-gray-300">
                         <div>Angin Duduk: <span class="text-mjaccent font-extrabold">${seatWindLabel}</span></div>
-                        <div>Angin Ronde: <span class="text-mjaccent font-extrabold">${prevalentWindLabel}</span></div>
+                        <div>Angin Meja: <span class="text-mjaccent font-extrabold">${prevalentWindLabel}</span></div>
                     </div>
                 </div>
 
@@ -2199,7 +2198,7 @@
             let prevalentCount = allTiles.filter(t => t === prevalentWindTile).length;
             if (prevalentCount >= 3 && seatWindTile !== prevalentWindTile) {
                 totalScore += 1;
-                items.push({ title: 'Pung Angin Ronde (Prevalent Wind)', pts: 1 });
+                items.push({ title: 'Pung Angin Meja (Prevalent Wind)', pts: 1 });
             }
 
             const orphanTileIds = ['1_wan', '9_wan', '1_sok', '9_sok', '1_tong', '9_tong', 'tung', 'nan', 'si', 'pei', 'cung', 'fat', 'pai'];
