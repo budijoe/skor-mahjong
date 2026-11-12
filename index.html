@@ -9,9 +9,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="manifest" href="manifest.webmanifest">
     <meta name="apple-mobile-web-app-title" content="Skor Mahjong">
     <meta name="theme-color" content="#074513">
+	<link rel="canonical" href="https://budijoe.github.io/skor-mahjong/" />
+	<link rel="manifest" href="/skor-mahjong/manifest.webmanifest">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Inter -->
@@ -2715,5 +2716,13 @@
                       .replace(/'/g, "&#039;");
         }
     </script>
+	  <script>
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.register (
+          '/skor-mahjong/sw.js',
+          {scope: '/skor-mahjong/'}
+        )
+      }
+  </script>
 </body>
 </html>
