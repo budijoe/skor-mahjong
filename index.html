@@ -1621,17 +1621,17 @@
 
         // --- SCORER PAGE 5: KONDISI SPESIAL ---
         function renderScorerPage5(content, footer) {
-            const specials = [
-                { id: 'none', label: 'Tidak Ada Kondisi Spesial', desc: 'Perhitungan standar' },
-                { id: 'pyongpi1', label: 'Pyong Pi Hitung 1', desc: 'Sisa joker, kartu apa pun yang diambil jadi kaki/pair (langsung dibuka setelah liu) (+5 Poin)' },
-                { id: 'pyongpi4', label: 'Pyong Pi Hitung 4', desc: 'Dihitung sampai dengan putaran ke 4, di putaran 4 baru tambah poin, apabila dibatalkan sebelum putaran ke 4, tidak ditambahkan apapun (+10 Poin)' },
-                { id: 'pyongpi6', label: 'Pyong Pi Hitung 6', desc: 'Dihitung sampai dengan putaran ke 6, di putaran 6 baru tambah poin, apabila dibatalkan sebelum putaran ke 6, tidak ditambahkan apapun (+30 Poin)' },
-                { id: 'paochin', label: 'Pao Chin', desc: 'Begitu mulai buka kartu, kurang 1 kartu sebelum Hu (+20 dengan KIM / +30 tanpa KIM)' },
-                { id: 'sesampu', label: 'Se Sam Pu Tap (Thirteen Unconnected)', desc: 'Semua kartu tidak nyambung, tanpa kim (+40 Poin)' },
-                { id: 'capsayauw', label: 'Cap Sa Yauw (Thirteen Orphans)', desc: '1,9 Ban/Tong/Sok + 7 Surat (+40 dengan KIM / +60 tanpa KIM)' },
-                { id: 'thihu', label: 'Thi Hu (Blessing of Earth)', desc: 'Hu dari buangan paling pertama (+40 dengan KIM / +60 tanpa KIM)' },
-                { id: 'thianhu', label: 'Thian Hu (Blessing of Heaven)', desc: 'Begitu main, Bandar langsung menang (+40 dengan KIM / +60 tanpa KIM)' }
-            ];
+        	const specials = [
+            	{ id: 'none', label: 'Tidak Ada Kondisi Spesial', desc: 'Perhitungan standar' },
+            	{ id: 'pyongpi1', label: 'Pyong Pi Hitung 1', desc: 'Sisa joker, kartu apa pun yang diambil jadi kaki/pair (langsung dibuka setelah liu).<br>+5 Poin' },
+            	{ id: 'pyongpi4', label: 'Pyong Pi Hitung 4', desc: 'Dihitung sampai dengan putaran ke 4, di putaran 4 baru tambah poin, apabila dibatalkan sebelum putaran ke 4, tidak ditambahkan apapun.<br>+10 Poin' },
+            	{ id: 'pyongpi6', label: 'Pyong Pi Hitung 6', desc: 'Dihitung sampai dengan putaran ke 6, di putaran 6 baru tambah poin, apabila dibatalkan sebelum putaran ke 6, tidak ditambahkan apapun.<br>+30 Poin' },
+            	{ id: 'paochin', label: 'Pao Chin', desc: 'Di awal permainan setelah kartu dibagi, tinggal kurang dari 1 kartu sebelum Hu; harus diumumkan di awal permainan. Putaran pertama liu bisa Thi Hu. Apabila Thi Hu gagal, Pao Chin tetap berlaku.<br>+20 dengan KIM / +30 tanpa KIM' },
+            	{ id: 'sesampu', label: 'Se Sam Pu Tap (Thirteen Unconnected)', desc: 'Semua kartu tidak nyambung (tidak ada pair, minimal loncat 2 dalam suit yang sama). Tidak bisa dibuat (hanya dari awal bagi kartu), tidak boleh punya bunga, tidak boleh punya kim.<br>+40 Poin' },
+            	{ id: 'capsayauw', label: 'Cap Sa Yauw (Thirteen Orphans)', desc: '1 wan, 9 wan, 1 tong, 9 tong, 1 sok, 9 sok, tung, nan, si, pei, cung, fat, pat +1 antaranya.<br>+40 dengan KIM / +60 tanpa KIM' },
+            	{ id: 'thihu', label: 'Thi Hu (Blessing of Earth)', desc: 'Hu dari kartu buangan yang paling pertama (dari pemain pertama) diawali dengan pengumuman Pao Chin.<br>+40 dengan KIM / +60 tanpa KIM' },
+            	{ id: 'thianhu', label: 'Thian Hu (Blessing of Heaven)', desc: 'Setelah dibagi kartu, Bandar dengan 14 kartu langsung Hu.<br>+40 dengan KIM / +60 tanpa KIM' }
+        	];
 
             let optionsHtml = specials.map(s => `
                 <div class="option-card bg-white border-2 ${scorerState.specialHand === s.id ? 'border-mjgreen bg-mjlight' : 'border-gray-200'} rounded-2xl p-3 mb-2 flex items-center cursor-pointer transition" onclick="triggerHaptic(20); selectSpecialHand('${s.id}')">
