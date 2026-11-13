@@ -1677,25 +1677,23 @@
                 </div>
             `).join('');
 
-            let flowersVisualHtml = '';
-            if (scorerState.selectedFlowers.length > 0) {
-                let flowerCardsHtml = scorerState.selectedFlowers.map(fId => {
-                    const fl = flowerTiles.find(f => f.id === fId);
-                    return fl ? `
-                        <div class="bg-amber-50 border border-amber-300 rounded-lg p-1 flex items-center gap-1 text-[10px] font-semibold">
-                            <img src="${fl.img}" class="w-5 h-7 object-contain">
-                            <span>${fl.name}</span>
-                        </div>
-                    ` : '';
-                }).join('');
+			let flowersVisualHtml = '';
+        	if (state.selectedFlowers.length > 0) {
+            	const sortedFlowers = flowerTiles.filter(f => state.selectedFlowers.includes(f.id));
+            	let flowerCardsHtml = sortedFlowers.map(fl => `
+                	<div class="visual-flower-card">
+                    	<img src="${fl.img}" alt="${fl.name}">
+                    	<span>${fl.name}</span>
+                	</div>
+            	`).join('');
 
-                flowersVisualHtml = `
-                    <div class="text-[11px] font-bold text-mjgreen mb-1">🌸 Kartu Bunga (${scorerState.selectedFlowers.length})</div>
-                    <div class="flex flex-wrap gap-1.5 mb-3 pb-2 border-b border-dashed border-gray-200">
-                        ${flowerCardsHtml}
-                    </div>
-                `;
-            }
+            flowersVisualHtml = `
+                <div class="visual-section-title">
+                    <span>🌸 Kartu Bunga (${sortedFlowers.length})</span>
+                </div>
+                <div class="visual-flowers-row">${flowerCardsHtml}</div>
+            	`;
+        	}
 
             let handSetsVisualHtml = '';
             if (scorerState.handMode === 'standard') {
