@@ -2312,7 +2312,7 @@ let flowersVisualHtml = '';
                 let flowerCardsHtml = sortedFlowers.map(fl => `
                     <div class="bg-amber-50 border border-amber-300 rounded-lg p-1 flex items-center gap-1 text-[10px] font-semibold">
                         <img src="${fl.img}" class="w-5 h-7 object-contain">
-                        <span>${fl.name}</span>
+                        <span class="${fl.code.startsWith('red') ? 'text-mjdanger font-bold' : ''}">${fl.name}</span>
                     </div>
                 `).join('');
 
