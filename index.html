@@ -190,9 +190,98 @@
             border: 2px solid #c53030;
             box-shadow: 0 0 5px rgba(197, 48, 48, 0.5);
         }
+
+        /* Confetti Overlay Canvas */
+        #confettiCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        /* Animasi Pop Angka & Kilau Emas Kotak Skor (Kalkulator Tangan) */
+        @keyframes scorePopScale {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.26); }
+            72% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        @keyframes celebrateBoxGlow {
+            0% { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+            35% { box-shadow: 0 0 22px 4px rgba(246, 195, 68, 0.65), 0 0 0 2px rgba(255, 224, 130, 0.85); }
+            100% { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        }
+        .score-pop-anim {
+            display: inline-block;
+            animation: scorePopScale 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .celebrate-glow {
+            animation: celebrateBoxGlow 0.9s ease-out forwards;
+        }
+
+        /* Animasi Podium Peringkat Muncul Bertahap (Staggered Reveal) */
+        @keyframes podiumSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(24px) scale(0.96);
+            }
+            70% {
+                opacity: 1;
+                transform: translateY(-3px) scale(1.01);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .podium-reveal {
+            opacity: 0;
+            animation: podiumSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Efek Kilau Emas (Shimmer) & Mahkota Juara 1 */
+        @keyframes championShimmer {
+            0% { transform: translateX(-140%) skewX(-20deg); }
+            45%, 100% { transform: translateX(260%) skewX(-20deg); }
+        }
+        @keyframes crownFloat {
+            0%, 100% { transform: translateY(0) rotate(-6deg); }
+            50% { transform: translateY(-3px) rotate(4deg); }
+        }
+        .champion-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #fffdf7 0%, #fff8e1 55%, #ffffff 100%);
+            box-shadow: 0 8px 20px -4px rgba(214, 157, 46, 0.32), 0 0 0 1px rgba(214, 157, 46, 0.25);
+        }
+        .champion-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 236, 179, 0.75) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            pointer-events: none;
+            animation: championShimmer 2.8s ease-in-out infinite;
+        }
+        .crown-badge {
+            display: inline-block;
+            animation: crownFloat 2.2s ease-in-out infinite;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased selection:bg-mjgreen selection:text-white">
+
+    <!-- Confetti Overlay Canvas -->
+    <canvas id="confettiCanvas"></canvas>
 
     <!-- Header App -->
     <header class="w-full bg-mjgreen text-white shadow-md py-4 px-4 sticky top-0 z-30">
@@ -353,7 +442,7 @@
         <!-- ========================================== -->
         <section id="screen-final" class="hidden space-y-4">
             <div id="final-capture" class="bg-mjbg rounded-3xl p-5 space-y-5 border border-mjgreen/10">
-                <div class="text-center space-y-1">
+                <div class="text-center space-y-1 cursor-pointer select-none" onclick="replayFinalCelebration()" title="Ketuk untuk memutar ulang perayaan">
                     <div class="text-4xl">🀅</div>
                     <h2 class="text-2xl font-black tracking-wider uppercase text-mjgreen">SKOR MAHJONG HARI INI</h2>
                     <p class="text-[11px] font-semibold text-mjgreen/60">Sistem Bandung YDSP</p>
@@ -368,7 +457,7 @@
                     <!-- Dynamic ranking -->
                 </div>
 
-                <div class="text-sm text-mjgreen space-y-1.5 border-t border-mjgreen/15 pt-3">
+                <div class="text-lg text-mjgreen space-y-1.5 border-t border-mjgreen/15 pt-3">
                     <div><span class="font-medium">Tay Terbesar:</span> <span id="final-biggest-hand" class="font-bold"></span></div>
                     <div><span class="font-medium">Poin Ronde Terbesar:</span> <span id="final-biggest-round" class="font-bold"></span></div>
                 </div>
@@ -499,7 +588,6 @@
 
                 <!-- TOMBOL BANTU HITUNGKAN TAY (Kuning Full Width) -->
                 <button type="button" onclick="openScorerFromRecord()" class="w-full bg-mjgold hover:bg-amber-600 text-white font-extrabold py-3.5 px-4 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-lg tracking-wide border-2 border-amber-600">
-                    <!-- <i class="fa-solid fa-calculator text-base"></i>🧑🏻‍🏫   -->
 					<img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/budijoe-pixel.svg" alt="Budi" class="w-7 h-7 shrink-0 object-contain" style="image-rendering: pixelated;">
                     <span>BUDI, INI DAPAT BERAPA?</span>
                 </button>
@@ -701,6 +789,23 @@
        	// ==========================================
 	// HAPTIC & AUDIO FEEDBACK (NUDGE STYLE)
 	// ==========================================
+	let sharedAudioCtx = null;
+
+	function getAudioContext() {
+		try {
+			if (!sharedAudioCtx) {
+				const AudioCtx = window.AudioContext || window.webkitAudioContext;
+				if (AudioCtx) sharedAudioCtx = new AudioCtx();
+			}
+			if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+				sharedAudioCtx.resume();
+			}
+			return sharedAudioCtx;
+		} catch (e) {
+			return null;
+		}
+	}
+
 	function triggerHaptic(duration = 35) {
     	// 1. Efek Getar (Vibration API)
    	 if ("vibrate" in navigator) {
@@ -713,20 +818,16 @@
 
     // 2. Efek Suara Ketukan / Nudge (Web Audio API)
     try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioCtx = getAudioContext();
         if (audioCtx) {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
 
-            // Mengatur tipe suara ketukan halus (sine wave dengan frekuensi rendah)
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(2800, audioCtx.currentTime); // Frekuensi suara nudge
+            oscillator.frequency.setValueAtTime(2800, audioCtx.currentTime);
             oscillator.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 0.02);
 
-            gainNode.gain.setValueAtTime(0.10, audioCtx.currentTime); // Volume tipis tidak bising
+            gainNode.gain.setValueAtTime(0.10, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
 
             oscillator.connect(gainNode);
@@ -735,10 +836,533 @@
             oscillator.start();
             oscillator.stop(audioCtx.currentTime + 0.02);
         }
-    } catch (e) {
-        // Diabaikan jika browser memerlukan interaksi user awal untuk audio context
-    }
+    } catch (e) {}
 }
+
+    // Suara pop lembut (subtle pop + warm harmonic sparkle) saat angka akhir muncul & confetti meledak
+    function playSubtlePopSound() {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            // 1. Soft bubble/cork pop (warm sine sweep)
+            const popOsc = ctx.createOscillator();
+            const popGain = ctx.createGain();
+            popOsc.type = 'sine';
+            popOsc.frequency.setValueAtTime(210, now);
+            popOsc.frequency.exponentialRampToValueAtTime(520, now + 0.045);
+            popOsc.frequency.exponentialRampToValueAtTime(320, now + 0.095);
+
+            popGain.gain.setValueAtTime(0.001, now);
+            popGain.gain.linearRampToValueAtTime(0.095, now + 0.012);
+            popGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.11);
+
+            popOsc.connect(popGain);
+            popGain.connect(ctx.destination);
+            popOsc.start(now);
+            popOsc.stop(now + 0.115);
+
+            // 2. Subtle delicate sparkle overtone (very low volume)
+            const chimeOsc = ctx.createOscillator();
+            const chimeGain = ctx.createGain();
+            chimeOsc.type = 'triangle';
+            chimeOsc.frequency.setValueAtTime(1046.5, now + 0.02); // C6
+            chimeOsc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08); // E6
+
+            chimeGain.gain.setValueAtTime(0.0005, now + 0.02);
+            chimeGain.gain.linearRampToValueAtTime(0.032, now + 0.035);
+            chimeGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.24);
+
+            chimeOsc.connect(chimeGain);
+            chimeGain.connect(ctx.destination);
+            chimeOsc.start(now + 0.02);
+            chimeOsc.stop(now + 0.25);
+        } catch(e) {}
+    }
+
+    // ==========================================
+    // SUARA PERAYAAN PERMAINAN SELESAI
+    // ==========================================
+    // 4. Suara Mahjong Tile Clack + Chime (Benturan Batu Mahjong & Lonceng)
+    function playMahjongClackAndChime() {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            // Dua benturan batu mahjong yang renyah (clack-clack)
+            [0, 0.075].forEach((offset, idx) => {
+                // Transient noise burst (tekstur benturan akrilik/bambu keras)
+                const bufferSize = Math.floor(ctx.sampleRate * 0.022);
+                const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.22));
+                }
+                const noise = ctx.createBufferSource();
+                noise.buffer = noiseBuffer;
+
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(idx === 0 ? 3100 : 3450, now + offset);
+                filter.Q.setValueAtTime(3.2, now + offset);
+
+                const noiseGain = ctx.createGain();
+                noiseGain.gain.setValueAtTime(0.32, now + offset);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.022);
+
+                noise.connect(filter);
+                filter.connect(noiseGain);
+                noiseGain.connect(ctx.destination);
+                noise.start(now + offset);
+
+                // Resonansi nada tinggi singkat batu mahjong
+                const clackOsc = ctx.createOscillator();
+                const clackGain = ctx.createGain();
+                clackOsc.type = 'triangle';
+                clackOsc.frequency.setValueAtTime(idx === 0 ? 1850 : 2120, now + offset);
+                clackOsc.frequency.exponentialRampToValueAtTime(980, now + offset + 0.028);
+
+                clackGain.gain.setValueAtTime(0.14, now + offset);
+                clackGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.03);
+
+                clackOsc.connect(clackGain);
+                clackGain.connect(ctx.destination);
+                clackOsc.start(now + offset);
+                clackOsc.stop(now + offset + 0.032);
+            });
+
+            // Disusul denting lonceng / koin emas (bell chime) bergema lembut
+            const chimeNotes = [
+                { freq: 1318.51, delay: 0.17, dur: 0.85, vol: 0.085 }, // E6
+                { freq: 1567.98, delay: 0.26, dur: 0.95, vol: 0.095 }, // G6
+                { freq: 2093.00, delay: 0.36, dur: 1.25, vol: 0.11 }   // C7
+            ];
+
+            chimeNotes.forEach(n => {
+                const osc = ctx.createOscillator();
+                const harmonic = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(n.freq, now + n.delay);
+
+                harmonic.type = 'sine';
+                harmonic.frequency.setValueAtTime(n.freq * 2, now + n.delay);
+
+                const harmGain = ctx.createGain();
+                harmGain.gain.setValueAtTime(0.22, now + n.delay);
+
+                gain.gain.setValueAtTime(0.0005, now + n.delay);
+                gain.gain.linearRampToValueAtTime(n.vol, now + n.delay + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.0004, now + n.delay + n.dur);
+
+                harmonic.connect(harmGain);
+                harmGain.connect(gain);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start(now + n.delay);
+                harmonic.start(now + n.delay);
+                osc.stop(now + n.delay + n.dur + 0.02);
+                harmonic.stop(now + n.delay + n.dur + 0.02);
+            });
+        } catch (e) {}
+    }
+
+    // 5. Suara Slot/Coin Tally (Tick-tick-tick cepat saat count-up + Ding! nyaring di akhir)
+    function playTallyTickSound(progress = 0) {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            // Nada naik perlahan seiring progres hitungan
+            const baseFreq = 720 + progress * 480;
+            osc.frequency.setValueAtTime(baseFreq, now);
+            osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.25, now + 0.022);
+
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.055, now + 0.004);
+            gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.025);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.028);
+        } catch (e) {}
+    }
+
+    function playTallyDingSound() {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            // Denting "Ding!" nyaring & jernih saat angka Juara 1 berhenti
+            const freqs = [1567.98, 2349.32, 3135.96]; // G6 + overtones
+            freqs.forEach((f, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(f, now);
+
+                const peak = idx === 0 ? 0.14 : (idx === 1 ? 0.05 : 0.025);
+                const dur = idx === 0 ? 0.95 : 0.55;
+
+                gain.gain.setValueAtTime(0.0008, now);
+                gain.gain.linearRampToValueAtTime(peak, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + dur + 0.02);
+            });
+        } catch (e) {}
+    }
+
+    // Sistem partikel confetti (ledakan titik elemen & hujan konfeti + tile mahjong)
+    let confettiParticles = [];
+    let confettiAnimFrame = null;
+    let scoreCounterFrame = null;
+    let championTallyTimer = null;
+    let championCountFrame = null;
+
+    // Preload ikon SVG kartu Mahjong untuk hujan konfeti layar akhir
+    const MAHJONG_CONFETTI_SVGS = [
+        'svg/03-red-dragon.svg',
+        'svg/02-green-dragon.svg',
+        'svg/01-white-dragon.svg',
+        'svg/04-east-wind.svg',
+        'svg/44-joker-clown.svg',
+        'svg/08-characters-1.svg',
+        'svg/26-bamboos-1.svg',
+        'svg/17-circles-1-variant-4.svg',
+        'svg/35-spring.svg'
+    ];
+    let loadedMahjongTileImages = [];
+
+    function preloadMahjongConfettiImages() {
+        if (loadedMahjongTileImages.length > 0) return;
+        const base = "https://raw.githubusercontent.com/budijoe/skor-mahjong/main/";
+        MAHJONG_CONFETTI_SVGS.forEach(path => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = base + path;
+            loadedMahjongTileImages.push(img);
+        });
+    }
+
+    function launchConfettiFromElement(targetEl) {
+        const canvas = document.getElementById('confettiCanvas');
+        if (!canvas || !targetEl) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        const rect = targetEl.getBoundingClientRect();
+        const originX = rect.left + rect.width / 2;
+        const originY = rect.top + rect.height / 2;
+
+        // Palet warna bertema Mahjong YDSP (emas, hijau giok, merah naga, putih gading)
+        const colors = ['#F6C344', '#FFE082', '#E53E3E', '#38A169', '#FFFFFF', '#D69D2E', '#68D391'];
+        const shapes = ['rect', 'circle', 'ribbon'];
+        const particleCount = 46;
+
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.35;
+            const speed = 2.4 + Math.random() * 5.2;
+            confettiParticles.push({
+                x: originX + (Math.random() - 0.5) * 14,
+                y: originY + (Math.random() - 0.5) * 8,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 1.8,
+                gravity: 0.16 + Math.random() * 0.06,
+                drag: 0.965,
+                size: 4.5 + Math.random() * 4.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                shape: shapes[Math.floor(Math.random() * shapes.length)],
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.24,
+                wobble: Math.random() * Math.PI * 2,
+                wobbleSpeed: 0.08 + Math.random() * 0.08,
+                alpha: 1,
+                decay: 0.013 + Math.random() * 0.008
+            });
+        }
+
+        if (!confettiAnimFrame) {
+            renderConfettiLoop();
+        }
+    }
+
+    // 1. Hujan Konfeti & Tile Mahjong (3.5 detik saat layar hasil akhir terbuka)
+    function launchMahjongConfettiRain() {
+        const canvas = document.getElementById('confettiCanvas');
+        if (!canvas) return;
+
+        preloadMahjongConfettiImages();
+
+        const dpr = window.devicePixelRatio || 1;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        // Hijau zamrud (#084413), emas (#d69d2e), merah (#c53030), ditambah rectangle putih (#FFFFFF)
+        const colors = ['#084413', '#d69d2e', '#c53030', '#FFFFFF'];
+        const totalParticles = 78;
+
+        for (let i = 0; i < totalParticles; i++) {
+            const isTile = i % 5 === 0; // Sesekali diselingi ikon kartu mahjong (~20%)
+            const tileImg = loadedMahjongTileImages.length > 0
+                ? loadedMahjongTileImages[Math.floor(Math.random() * loadedMahjongTileImages.length)]
+                : null;
+
+            confettiParticles.push({
+                x: Math.random() * width,
+                y: -25 - Math.random() * (height * 0.65),
+                vx: (Math.random() - 0.5) * 1.6,
+                vy: 1.8 + Math.random() * 2.4,
+                gravity: 0.025 + Math.random() * 0.02,
+                drag: 0.992,
+                size: isTile ? (22 + Math.random() * 6) : (7 + Math.random() * 5),
+                color: colors[Math.floor(Math.random() * colors.length)],
+                shape: isTile ? 'mahjong_tile' : 'confetti_rect',
+                tileImg: tileImg,
+                rotation: (Math.random() - 0.5) * 0.8,
+                rotationSpeed: (Math.random() - 0.5) * 0.07,
+                wobble: Math.random() * Math.PI * 2,
+                wobbleSpeed: 0.04 + Math.random() * 0.04,
+                alpha: 1,
+                decay: 0.0042 + Math.random() * 0.0018, // Melayang 3–4 detik sebelum menghilang perlahan
+                bornAt: performance.now(),
+                fadeAfterMs: 2600 + Math.random() * 900
+            });
+        }
+
+        if (!confettiAnimFrame) {
+            renderConfettiLoop();
+        }
+    }
+
+    function drawRoundedRectPath(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    function renderConfettiLoop(now = performance.now()) {
+        const canvas = document.getElementById('confettiCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = confettiParticles.length - 1; i >= 0; i--) {
+            const p = confettiParticles[i];
+            p.vx *= p.drag;
+            p.vy = p.vy * p.drag + p.gravity;
+            p.x += p.vx + Math.sin(p.wobble) * (p.shape === 'mahjong_tile' ? 0.85 : 0.55);
+            p.y += p.vy;
+            p.rotation += p.rotationSpeed;
+            p.wobble += p.wobbleSpeed;
+
+            if (p.fadeAfterMs) {
+                if (now - p.bornAt > p.fadeAfterMs) {
+                    p.alpha -= p.decay * 2.4;
+                }
+            } else {
+                p.alpha -= p.decay;
+            }
+
+            if (p.alpha <= 0 || p.y > height + 40) {
+                confettiParticles.splice(i, 1);
+                continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+
+            if (p.shape === 'mahjong_tile') {
+                const tileW = p.size * 0.76;
+                const tileH = p.size;
+                // Badan batu mahjong putih gading dengan bayangan hijau giok
+                ctx.fillStyle = '#084413';
+                drawRoundedRectPath(ctx, -tileW / 2 + 1.5, -tileH / 2 + 2, tileW, tileH, 3.5);
+                ctx.fill();
+
+                ctx.fillStyle = '#FFFFFF';
+                drawRoundedRectPath(ctx, -tileW / 2, -tileH / 2, tileW, tileH, 3.5);
+                ctx.fill();
+
+                ctx.strokeStyle = '#cbd5e0';
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+
+                if (p.tileImg && p.tileImg.complete && p.tileImg.naturalWidth > 0) {
+                    ctx.drawImage(p.tileImg, -tileW * 0.4, -tileH * 0.4, tileW * 0.8, tileH * 0.8);
+                }
+            } else if (p.shape === 'confetti_rect') {
+                // Konfeti persegi panjang (termasuk rectangle putih dengan garis tepi tipis agar terlihat jelas)
+                const w = p.size * 1.15;
+                const h = p.size * 0.55;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-w / 2, -h / 2, w, h);
+                if (p.color === '#FFFFFF') {
+                    ctx.strokeStyle = 'rgba(8, 68, 19, 0.25)';
+                    ctx.lineWidth = 0.6;
+                    ctx.strokeRect(-w / 2, -h / 2, w, h);
+                }
+            } else if (p.shape === 'circle') {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(0, 0, p.size * 0.48, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (p.shape === 'ribbon') {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size * 0.7, -p.size * 0.25, p.size * 1.4, p.size * 0.5);
+            } else {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size * 0.45, -p.size * 0.45, p.size * 0.9, p.size * 0.9);
+            }
+            ctx.restore();
+        }
+
+        if (confettiParticles.length > 0) {
+            confettiAnimFrame = requestAnimationFrame(renderConfettiLoop);
+        } else {
+            confettiAnimFrame = null;
+            ctx.clearRect(0, 0, width, height);
+        }
+    }
+
+    // Animasi hitung angka + pop + confetti + suara pop (Kalkulator Tangan)
+    function triggerScoreCelebration(finalScore, instantPop = false) {
+        const scoreValEl = document.getElementById('finalScoreVal');
+        const scoreBoxEl = document.getElementById('finalScoreBox');
+        if (!scoreValEl) return;
+
+        if (scoreCounterFrame) {
+            cancelAnimationFrame(scoreCounterFrame);
+            scoreCounterFrame = null;
+        }
+
+        scoreValEl.classList.remove('score-pop-anim');
+        if (scoreBoxEl) scoreBoxEl.classList.remove('celebrate-glow');
+        void scoreValEl.offsetWidth;
+
+        const firePopAndConfetti = () => {
+            scoreValEl.innerText = finalScore;
+            scoreValEl.classList.add('score-pop-anim');
+            if (scoreBoxEl) scoreBoxEl.classList.add('celebrate-glow');
+            playSubtlePopSound();
+            launchConfettiFromElement(scoreValEl);
+        };
+
+        if (instantPop || finalScore <= 0) {
+            firePopAndConfetti();
+            return;
+        }
+
+        const duration = 320;
+        const startTime = performance.now();
+
+        function stepCount(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const currentVal = Math.round(eased * finalScore);
+            scoreValEl.innerText = currentVal;
+
+            if (progress < 1) {
+                scoreCounterFrame = requestAnimationFrame(stepCount);
+            } else {
+                scoreCounterFrame = null;
+                firePopAndConfetti();
+            }
+        }
+
+        scoreCounterFrame = requestAnimationFrame(stepCount);
+    }
+
+    // 3 & 5. Animasi Count-Up Juara 1 + Suara Slot/Coin Tally (tick-tick-tick + ding!)
+    function startChampionCountUp(targetScore) {
+        const scoreEl = document.getElementById('champion-score-val');
+        if (!scoreEl) return;
+
+        if (championCountFrame) {
+            cancelAnimationFrame(championCountFrame);
+            championCountFrame = null;
+        }
+
+        const formatSigned = (val) => (val > 0 ? '+' + val : String(val));
+
+        if (targetScore === 0) {
+            scoreEl.innerText = '0';
+            playTallyDingSound();
+            return;
+        }
+
+        const duration = 850;
+        const startTime = performance.now();
+        let lastTickTime = 0;
+
+        function stepChampion(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const currentVal = Math.round(eased * targetScore);
+
+            scoreEl.innerText = formatSigned(currentVal);
+
+            // Bunyi tick-tick-tick cepat setiap ~55ms selama berhitung
+            if (progress < 1 && now - lastTickTime >= 55) {
+                playTallyTickSound(progress);
+                lastTickTime = now;
+            }
+
+            if (progress < 1) {
+                championCountFrame = requestAnimationFrame(stepChampion);
+            } else {
+                championCountFrame = null;
+                scoreEl.innerText = formatSigned(targetScore);
+                scoreEl.classList.remove('score-pop-anim');
+                void scoreEl.offsetWidth;
+                scoreEl.classList.add('score-pop-anim');
+                playTallyDingSound();
+            }
+        }
+
+        championCountFrame = requestAnimationFrame(stepChampion);
+    }
+
+    function replayFinalCelebration() {
+        triggerHaptic(35);
+        showFinalScreen(true);
+    }
 
         // ==========================================
         // 1. STATE MAIN BOARD APP
@@ -825,13 +1449,14 @@
         }
 
         window.onload = function() {
+            preloadMahjongConfettiImages();
             if (loadState()) {
                 players.forEach((player, idx) => {
                     const input = document.getElementById(`p${idx + 1}-input`);
                     if (input) input.value = player.name;
                 });
                 if (finishedAt) {
-                    showFinalScreen();
+                    showFinalScreen(false);
                 } else {
                     showDashboard();
                 }
@@ -1263,6 +1888,10 @@
 
         function closeScorerModal() {
             triggerHaptic(25);
+            if (scoreCounterFrame) {
+                cancelAnimationFrame(scoreCounterFrame);
+                scoreCounterFrame = null;
+            }
             document.getElementById('modal-scorer').classList.add('hidden');
         }
 
@@ -1677,23 +2306,23 @@
                 </div>
             `).join('');
 
-			let flowersVisualHtml = '';
-        	if (state.selectedFlowers.length > 0) {
-            	const sortedFlowers = flowerTiles.filter(f => state.selectedFlowers.includes(f.id));
-            	let flowerCardsHtml = sortedFlowers.map(fl => `
-                	<div class="visual-flower-card">
-                    	<img src="${fl.img}" alt="${fl.name}">
-                    	<span>${fl.name}</span>
-                	</div>
-            	`).join('');
+let flowersVisualHtml = '';
+        if (state.selectedFlowers.length > 0) {
+            const sortedFlowers = flowerTiles.filter(f => state.selectedFlowers.includes(f.id));
+            let flowerCardsHtml = sortedFlowers.map(fl => `
+                <div class="visual-flower-card">
+                    <img src="${fl.img}" alt="${fl.name}">
+                    <span>${fl.name}</span>
+                </div>
+            `).join('');
 
             flowersVisualHtml = `
                 <div class="visual-section-title">
                     <span>🌸 Kartu Bunga (${sortedFlowers.length})</span>
                 </div>
                 <div class="visual-flowers-row">${flowerCardsHtml}</div>
-            	`;
-        	}
+            `;
+        }
 
             let handSetsVisualHtml = '';
             if (scorerState.handMode === 'standard') {
@@ -1769,9 +2398,9 @@
                 <div class="sticky top-0 z-20 bg-mjbg pt-1 pb-3 -mt-4 -mx-4 px-4 border-b border-gray-200/80 shadow-sm space-y-2">
                     <div class="text-sm font-bold text-mjgreen border-b-2 border-mjgold pb-1">Hasil Perhitungan Score</div>
                     
-                    <div class="bg-mjgreen text-white rounded-2xl p-3 text-center shadow-md">
+                    <div id="finalScoreBox" onclick="triggerScoreCelebration(${evaluation.totalScore}, true)" title="Ketuk untuk memutar ulang animasi" class="bg-mjgreen text-white rounded-2xl p-3 text-center shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform">
                         <div class="text-[11px] font-semibold uppercase tracking-wider text-white">TOTAL NILAI KEMENANGAN</div>
-                        <div class="text-3xl font-black text-mjgold my-0.5">${evaluation.totalScore} <span class="text-base text-white font-bold">Tay</span></div>
+                        <div class="text-3xl font-black text-mjgold my-0.5"><span id="finalScoreVal">0</span> <span class="text-base text-white font-bold">Tay</span></div>
                     </div>
 
                     <div class="bg-white rounded-xl p-2 text-xs font-bold text-mjgreen flex justify-around text-center border border-gray-300">
@@ -1811,6 +2440,10 @@
                     </div>
                 </div>
             `;
+
+            requestAnimationFrame(() => {
+                triggerScoreCelebration(evaluation.totalScore, false);
+            });
         }
 
         function completeScorerCalculation(totalScore) {
@@ -2396,7 +3029,8 @@
             closeFinishModal();
             finishedAt = Date.now();
             saveState();
-            showFinalScreen();
+            showFinalScreen(true);
+            scrollToTop();
         }
 
         function formatDuration(ms) {
@@ -2413,7 +3047,16 @@
             return `${names.map(escapeHtml).join(', ')} (${top})`;
         }
 
-        function showFinalScreen() {
+        function showFinalScreen(celebrate = true) {
+            if (championTallyTimer) {
+                clearTimeout(championTallyTimer);
+                championTallyTimer = null;
+            }
+            if (championCountFrame) {
+                cancelAnimationFrame(championCountFrame);
+                championCountFrame = null;
+            }
+
             document.getElementById('screen-setup').classList.add('hidden');
             document.getElementById('screen-dashboard').classList.add('hidden');
             document.getElementById('round-counter-badge').classList.add('hidden');
@@ -2431,14 +3074,27 @@
 
             const sorted = [...players].sort((a, b) => b.score - a.score);
             const medal = ['bg-mjgold text-white', 'bg-gray-400 text-white', 'bg-amber-700 text-white', 'bg-mjgreen/15 text-mjgreen'];
+            const totalPlayers = sorted.length;
+
             document.getElementById('final-ranking').innerHTML = sorted.map((player, i) => {
                 const rank = sorted.findIndex(p => p.score === player.score) + 1;
                 const isTop = rank === 1;
+                const isFirstCard = i === 0;
+                // Podium muncul bertahap dari peringkat terbawah (i=3 -> 0s) ke Juara 1 (i=0 -> 0.6s)
+                const staggerDelay = celebrate ? ((totalPlayers - 1 - i) * 0.2) : 0;
+                const formattedScore = player.score > 0 ? '+' + player.score : String(player.score);
+
                 return `
-                    <div class="flex items-center bg-white rounded-2xl p-3.5 shadow-sm border ${isTop ? 'border-mjgold border-2' : 'border-mjgreen/15'}">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${medal[rank - 1]} shrink-0">${rank}</div>
-                        <div class="final-name flex-1 min-w-0 px-3 py-0.5 font-bold text-mjgreen text-lg leading-normal truncate">${escapeHtml(player.name)}</div>
-                        <div class="text-3xl font-black tracking-tight ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'}">${player.score > 0 ? '+' + player.score : player.score}</div>
+                    <div style="animation-delay: ${staggerDelay.toFixed(1)}s"
+                         class="flex items-center rounded-2xl p-3.5 shadow-sm border ${celebrate ? 'podium-reveal' : ''} ${isTop ? 'champion-card champion-shimmer border-mjgold border-2' : 'bg-white border-mjgreen/15'}">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${medal[rank - 1]} shrink-0 shadow-sm">${rank}</div>
+                        <div class="final-name flex-1 min-w-0 px-3 py-0.5 font-bold text-mjgreen text-lg leading-normal truncate flex items-center gap-1.5">
+                            ${isTop ? '<span class="crown-badge text-xl leading-none">👑</span>' : ''}
+                            <span class="truncate">${escapeHtml(player.name)}</span>
+                        </div>
+                        <div ${isFirstCard ? 'id="champion-score-val"' : ''} class="text-3xl font-black tracking-tight ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'}">
+                            ${celebrate && isFirstCard ? '0' : formattedScore}
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -2450,25 +3106,111 @@
             document.getElementById('final-biggest-round').innerHTML = describeTopEntries(
                 winRounds.map(r => ({ name: r.winnerName, value: Math.max(...r.deltaScores) }))
             );
-        }
 
-        async function captureFinal() {
-            if (typeof html2canvas === 'undefined') {
-                return null;
+            if (celebrate) {
+                // Getaran kemenangan meriah
+                if ("vibrate" in navigator) {
+                    try {
+                        navigator.vibrate([80, 40, 80, 40, 250]);
+                    } catch (e) {}
+                }
+
+                // 1. Hujan Konfeti & Tile Mahjong (3–4 detik)
+                launchMahjongConfettiRain();
+
+                // 4. Suara Mahjong Tile Clack + Chime
+                playMahjongClackAndChime();
+
+                // 3 & 5. Saat Juara 1 muncul di puncak podium (0.6s), mulai Count-Up + Slot/Coin Tally + Ding!
+                const championScore = sorted[0] ? sorted[0].score : 0;
+                const championRevealMs = (totalPlayers - 1) * 200;
+                championTallyTimer = setTimeout(() => {
+                    startChampionCountUp(championScore);
+                }, championRevealMs);
             }
-            const canvas = await html2canvas(document.getElementById('final-capture'), {
-                backgroundColor: '#F9F5F1',
-                scale: Math.max(2, window.devicePixelRatio || 1),
-                onclone: (doc) => {
-                    doc.querySelectorAll('#final-capture .final-name').forEach(el => {
-                        el.style.overflow = 'visible';
-                        el.style.whiteSpace = 'normal';
-                        el.style.wordBreak = 'break-word';
+        }
+async function captureFinal() {
+    if (typeof html2canvas === 'undefined') {
+        return null;
+    }
+    const canvas = await html2canvas(document.getElementById('final-capture'), {
+        backgroundColor: '#F9F5F1',
+        scale: Math.max(2, window.devicePixelRatio || 1),
+        onclone: (doc) => {
+            // 1. Matikan animasi & kilau shimmer (::after) pada dokumen kloning
+            const fixStyle = doc.createElement('style');
+            fixStyle.textContent = `
+                .podium-reveal { opacity: 1 !important; transform: none !important; animation: none !important; }
+                .champion-shimmer::after { display: none !important; content: none !important; }
+            `;
+            doc.head.appendChild(fixStyle);
+
+            // 2. Gunakan layout table-cell agar kolom kiri, tengah, & kanan terkunci presisi
+            doc.querySelectorAll('#final-ranking > div').forEach(card => {
+                const badge = card.children[0];
+                const nameEl = card.children[1];
+                const scoreEl = card.children[2];
+
+                card.style.display = 'table';
+                card.style.width = '100%';
+                card.style.boxSizing = 'border-box';
+
+                if (badge) {
+                    const badgeCell = doc.createElement('div');
+                    badgeCell.style.display = 'table-cell';
+                    badgeCell.style.verticalAlign = 'middle';
+                    badgeCell.style.width = '40px';
+
+                    badge.style.display = 'block';
+                    badge.style.width = '40px';
+                    badge.style.height = '40px';
+                    badge.style.textAlign = 'center';
+                    badge.style.lineHeight = '28px';
+                    badge.style.padding = '0';
+
+                    card.insertBefore(badgeCell, badge);
+                    badgeCell.appendChild(badge);
+                }
+
+                if (nameEl) {
+                    nameEl.style.display = 'table-cell';
+                    nameEl.style.verticalAlign = 'middle';
+                    nameEl.style.width = '100%';
+                    nameEl.style.overflow = 'visible';
+                    nameEl.style.whiteSpace = 'normal';
+                    nameEl.style.wordBreak = 'break-word';
+                    nameEl.style.lineHeight = '1.3';
+                    nameEl.style.padding = '2px 12px 16px 12px';
+
+                    nameEl.querySelectorAll('span').forEach(span => {
+                        span.style.overflow = 'visible';
+                        span.style.textOverflow = 'clip';
+                        span.style.whiteSpace = 'normal';
+                        span.style.lineHeight = '1.3';
                     });
                 }
+
+                if (scoreEl) {
+                    scoreEl.style.display = 'table-cell';
+                    scoreEl.style.verticalAlign = 'middle';
+                    scoreEl.style.textAlign = 'right';
+                    scoreEl.style.whiteSpace = 'nowrap';
+                    scoreEl.style.lineHeight = '1';
+                    scoreEl.style.paddingBottom = '24px';
+                    scoreEl.style.position = 'static';
+                }
             });
-            return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+            // 3. Sejajarkan ikon mahkota
+            doc.querySelectorAll('#final-capture .crown-badge').forEach(crown => {
+                crown.style.display = 'inline-block';
+                crown.style.marginBottom = '4px';
+                crown.style.marginRight = '4px';
+            });
         }
+    });
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
 
         function finalFileName() {
             const d = new Date(finishedAt || Date.now());
@@ -2790,6 +3532,14 @@
         function resetApp() {
             triggerHaptic(40);
             closeResetModal();
+            if (championTallyTimer) {
+                clearTimeout(championTallyTimer);
+                championTallyTimer = null;
+            }
+            if (championCountFrame) {
+                cancelAnimationFrame(championCountFrame);
+                championCountFrame = null;
+            }
             document.getElementById('p1-input').value = 'Budi';
             document.getElementById('p2-input').value = 'Joseph';
             document.getElementById('p3-input').value = 'Hansen';
