@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="google-adsense-account" content="ca-pub-1796730627631590">
-    <title>SKOR MAHJONG - Sistem Bandung YDSP</title>
-	<!-- Home screen & browser icons -->
+    <title>Skor Mahjong — Sistem Bandung YDSP</title>
+    <meta name="description" content="Pencatat skor dan kalkulator tay Mahjong Sistem Bandung YDSP untuk smartphone dengan sinkronisasi TV real-time.">
+    
+    <!-- Home screen & browser icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/skor-mahjong/apple-touch-icon.png">
     <link rel="icon" type="image/svg+xml" href="/skor-mahjong/favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="/skor-mahjong/favicon-32.png">
@@ -16,15 +17,17 @@
     <meta name="theme-color" content="#08403C">
     <link rel="canonical" href="https://budijoe.github.io/skor-mahjong/" />
     <link rel="manifest" href="/skor-mahjong/manifest.webmanifest">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Inter -->
+
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
+    
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -50,6 +53,15 @@
             background-color: #F9F5F1;
             color: #08403C;
             -webkit-tap-highlight-color: transparent;
+        }
+        /* TV Remote D-Pad & Keyboard Focus Indicator */
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        [tabindex]:focus-visible {
+            outline: 3px solid #d69e2e !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 0 5px rgba(214, 158, 46, 0.25) !important;
         }
         .btn-shadow {
             box-shadow: 0 4px 6px -1px rgba(7, 69, 19, 0.2), 0 2px 4px -1px rgba(7, 69, 19, 0.1);
@@ -204,7 +216,7 @@
             z-index: 60;
         }
 
-        /* Animasi Pop Angka & Kilau Emas Kotak Skor (Kalkulator Tangan) */
+        /* Animasi Pop Angka & Kilau Emas Kotak Skor */
         @keyframes scorePopScale {
             0% { transform: scale(1); }
             40% { transform: scale(1.26); }
@@ -224,7 +236,7 @@
             animation: celebrateBoxGlow 0.9s ease-out forwards;
         }
 
-        /* Animasi Podium Peringkat Muncul Bertahap (Staggered Reveal) */
+        /* Animasi Podium Peringkat Muncul Bertahap */
         @keyframes podiumSlideUp {
             0% {
                 opacity: 0;
@@ -281,176 +293,238 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-mjgreen selection:text-white">
+<body class="min-h-screen flex flex-col font-sans antialiased">
 
     <!-- Confetti Overlay Canvas -->
     <canvas id="confettiCanvas"></canvas>
 
     <!-- Header App -->
-    <header class="w-full bg-mjgreen text-white shadow-md py-4 px-4 sticky top-0 z-30">
-        <div class="max-w-xl mx-auto flex items-center justify-between">
-		<div class="flex items-center space-x-2.5">
-            <div class="w-8 h-10 bg-white rounded-md shadow-sm flex items-center justify-center shrink-0 border-b-2 border-emerald-200">
-                <img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/svg/44-joker-clown.svg" 
-                     alt="發" 
-                     class="w-full h-full object-contain select-none">
-            </div>
-                <div class="leading-tight">
-                    <h1 class="text-xl md:text-2xl font-black tracking-wider uppercase">SKOR MAHJONG</h1>
-                    <p class="text-[11px] font-semibold tracking-wide text-white/75">Sistem Bandung YDSP</p>
+    <header class="w-full bg-mjgreen text-white shadow-md py-3.5 px-4 sticky top-0 z-30 shrink-0">
+        <div class="max-w-lg mx-auto flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-8 h-10 bg-white rounded-lg shadow-sm flex items-center justify-center shrink-0 border-b-2 border-emerald-200">
+                    <img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/svg/44-joker-clown.svg" 
+                         alt="發" 
+                         class="w-full h-full object-contain select-none">
+                </div>
+                <div class="leading-tight truncate">
+                    <h1 class="text-base sm:text-lg font-black tracking-wider uppercase truncate">SKOR MAHJONG</h1>
+                    <p class="text-[10px] font-semibold tracking-wide text-white/75">Sistem Bandung YDSP</p>
                 </div>
             </div>
-            <div id="round-counter-badge" class="hidden bg-white/10 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border border-white/20">
-                Ronde <span id="current-round-num">1</span>
+
+            <div class="flex items-center space-x-1.5 shrink-0">
+                <button type="button" id="room-badge" onclick="copyRoomCode()" title="Ketuk untuk menyalin Kode Room"
+                    class="hidden bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-full text-[11px] font-extrabold backdrop-blur-sm border border-white/25 flex items-center space-x-1.5 transition active:scale-95">
+                    <span id="room-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                    <span id="header-room-code" class="font-mono tracking-wider text-mjgold">000000</span>
+                    <span id="header-room-role" class="text-[9px] bg-white/20 px-1.5 py-0.2 rounded uppercase">HOST</span>
+                    <i class="fa-regular fa-copy text-[10px] text-white/80"></i>
+                </button>
+
+                <div id="round-counter-badge" class="hidden bg-white/15 px-3 py-1 rounded-full text-xs font-extrabold backdrop-blur-sm border border-white/20">
+                    Ronde <span id="current-round-num" class="text-mjgold">1</span>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="flex-grow max-w-xl w-full mx-auto p-4 md:p-6 flex flex-col justify-start">
+    <!-- Main Content Container (Smartphone Portrait) -->
+    <main class="flex-grow max-w-lg w-full mx-auto px-4 py-5 space-y-5">
 
         <!-- ========================================== -->
-        <!-- SCREEN 1: SETUP NAMA PEMAIN                -->
+        <!-- SCREEN 1: SETUP NAMA PEMAIN & MODE ROOM    -->
         <!-- ========================================== -->
-        <section id="screen-setup" class="space-y-6">
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-mjgreen/10 space-y-4">
+        <section id="screen-setup" class="space-y-4">
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-mjgreen/10 space-y-4">
                 <div class="text-center space-y-1">
-                    <h2 class="text-lg font-bold text-mjgreen">Masukkan Nama Pemain</h2>
+                    <h2 class="text-xl font-black text-mjgreen">Masukkan Nama Pemain</h2>
                     <p class="text-xs text-mjtext/70">Isi nama 4 pemain yang akan bertanding</p>
                 </div>
 
-                <form id="setup-form" class="space-y-3" onsubmit="startGame(event)">
+                <form id="setup-form" class="space-y-3.5" onsubmit="startGame(event)">
                     <div>
-                        <label class="block text-xs font-semibold mb-1 text-mjgreen">Pemain 1 — Timur</label>
+                        <label class="block text-xs font-bold mb-1 text-mjgreen">Pemain 1 — Timur (Bandar Awal)</label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-2xl text-mjgreen">👤 東</span>
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-lg text-mjgreen">👤 東</span>
                             <input type="text" id="p1-input" required placeholder="Contoh: Budi" value="Budi"
-                                class="w-full pl-20 pr-3 py-2.5 rounded-xl border border-mjgreen/20 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-medium text-sm transition bg-mjbg/30">
+                                class="w-full pl-16 pr-3.5 py-2.5 rounded-xl border border-mjgreen/25 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-bold text-base transition bg-mjbg/30">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold mb-1 text-mjgreen">Pemain 2 — Selatan</label>
+                        <label class="block text-xs font-bold mb-1 text-mjgreen">Pemain 2 — Selatan</label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-2xl text-mjgreen">👤 南</span>
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-lg text-mjgreen">👤 南</span>
                             <input type="text" id="p2-input" required placeholder="Contoh: Joseph" value="Joseph"
-                                class="w-full pl-20 pr-3 py-2.5 rounded-xl border border-mjgreen/20 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-medium text-sm transition bg-mjbg/30">
+                                class="w-full pl-16 pr-3.5 py-2.5 rounded-xl border border-mjgreen/25 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-bold text-base transition bg-mjbg/30">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold mb-1 text-mjgreen">Pemain 3 — Barat</label>
+                        <label class="block text-xs font-bold mb-1 text-mjgreen">Pemain 3 — Barat</label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-2xl text-mjgreen">👤 西</span>
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-lg text-mjgreen">👤 西</span>
                             <input type="text" id="p3-input" required placeholder="Contoh: Hansen" value="Hansen"
-                                class="w-full pl-20 pr-3 py-2.5 rounded-xl border border-mjgreen/20 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-medium text-sm transition bg-mjbg/30">
+                                class="w-full pl-16 pr-3.5 py-2.5 rounded-xl border border-mjgreen/25 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-bold text-base transition bg-mjbg/30">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold mb-1 text-mjgreen">Pemain 4 — Utara</label>
+                        <label class="block text-xs font-bold mb-1 text-mjgreen">Pemain 4 — Utara</label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-2xl text-mjgreen">👤 北</span>
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-lg text-mjgreen">👤 北</span>
                             <input type="text" id="p4-input" required placeholder="Contoh: Ramses" value="Ramses"
-                                class="w-full pl-20 pr-3 py-2.5 rounded-xl border border-mjgreen/20 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-medium text-sm transition bg-mjbg/30">
+                                class="w-full pl-16 pr-3.5 py-2.5 rounded-xl border border-mjgreen/25 focus:border-mjgreen focus:ring-2 focus:ring-mjgreen/20 outline-none text-mjtext font-bold text-base transition bg-mjbg/30">
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full mt-4 bg-mjgreen hover:bg-mjaccent text-white font-bold py-3.5 px-4 rounded-xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-base">
-                        <span>Mulai Permainan</span>
-                        <i class="fa-solid fa-play text-sm"></i>
-                    </button>
+                    <div class="pt-1 space-y-2.5">
+                        <button type="submit" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-bold py-3.5 px-4 rounded-xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-base">
+                            <span>Mulai Permainan (Lokal)</span>
+                            <i class="fa-solid fa-play text-xs"></i>
+                        </button>
+
+                        <!-- Pembatas Mode Online -->
+                        <div class="relative flex py-1 items-center">
+                            <div class="flex-grow border-t border-mjgreen/15"></div>
+                            <span class="flex-shrink mx-3 text-[10px] font-extrabold uppercase tracking-wider text-mjgreen/60">atau Mode Online (Sinkron TV)</span>
+                            <div class="flex-grow border-t border-mjgreen/15"></div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <button type="button" id="btn-create-room" onclick="createOnlineRoom()" class="w-full bg-mjlight hover:bg-emerald-100 text-mjgreen border-2 border-mjgreen font-extrabold py-3 px-3 rounded-xl shadow-sm transition duration-200 flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
+                                <i class="fa-solid fa-tower-broadcast"></i>
+                                <span>Buat Room</span>
+                            </button>
+
+                            <button type="button" onclick="openJoinRoomModal()" class="w-full bg-mjgold hover:bg-amber-600 text-white font-extrabold py-3 px-3 rounded-xl btn-shadow transition duration-200 flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
+                                <i class="fa-solid fa-right-to-bracket"></i>
+                                <span>Gabung Room</span>
+                            </button>
+                        </div>
+                    </div>
                 </form>
             </div>
 
-            <a href="https://mj-ydsp.framer.website/" target="_blank" rel="noopener noreferrer" class="w-full bg-white hover:bg-mjlight text-mjgreen border-2 border-mjgreen font-extrabold py-3.5 px-4 rounded-xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-sm tracking-wide">
+            <a href="https://mj-ydsp.framer.website/" target="_blank" rel="noopener noreferrer" class="w-full bg-white hover:bg-mjlight text-mjgreen border border-mjgreen/30 font-extrabold py-3.5 px-4 rounded-2xl shadow-sm transition duration-200 flex items-center justify-center space-x-2 text-xs tracking-wide">
                 <i class="fa-solid fa-book-open"></i>
-                <span>PANDUAN CARA HITUNG SKOR YDSP</span>
-                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                <span>PANDUAN HITUNG SKOR YDSP</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
             </a>
         </section>
 
         <!-- ========================================== -->
         <!-- SCREEN 2: MAIN DASHBOARD & SCOREBOARD      -->
         <!-- ========================================== -->
-        <section id="screen-dashboard" class="hidden space-y-6">
+        <section id="screen-dashboard" class="hidden space-y-4">
             
-            <!-- Angin Meja -->
-            <div class="bg-white rounded-2xl px-4 py-3 shadow-sm border border-mjgreen/10 flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-mjgreen/70">Angin Meja</span>
-                <span class="flex items-center space-x-2">
-                    <span id="round-wind-char" class="text-2xl font-black text-mjgreen leading-none">東</span>
-                    <span id="round-wind-name" class="text-sm font-bold text-mjgreen">Timur</span>
-                </span>
+            <!-- Info Bar: Angin Meja & Bandar Saat Ini -->
+            <div class="grid grid-cols-2 gap-2.5">
+                <div class="bg-white rounded-2xl px-3.5 py-2.5 shadow-sm border border-mjgreen/15 flex items-center justify-between">
+                    <div>
+                        <span class="block text-[9px] font-extrabold uppercase tracking-wider text-mjgreen/60">Angin Meja</span>
+                        <span id="round-wind-name" class="text-sm font-black text-mjgreen uppercase">Timur</span>
+                    </div>
+                    <span id="round-wind-char" class="text-2xl font-black text-mjgreen leading-none bg-mjbg px-2.5 py-1.5 rounded-xl border border-mjgreen/10">東</span>
+                </div>
+
+                <div class="bg-white rounded-2xl px-3.5 py-2.5 shadow-sm border border-mjdanger/25 flex items-center justify-between">
+                    <div class="min-w-0 pr-1">
+                        <span class="block text-[9px] font-extrabold uppercase tracking-wider text-mjdanger">Bandar (東)</span>
+                        <span id="current-dealer-name" class="block text-sm font-black text-mjdanger truncate">Budi</span>
+                    </div>
+                    <span class="bg-mjdanger text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-wider shrink-0">BANDAR</span>
+                </div>
             </div>
 
-            <!-- Grid Card Skor Pemain -->
-            <div class="grid grid-cols-2 gap-3 md:gap-4" id="scoreboard-grid">
+            <!-- Scoreboard Grid (2x2 Mahjong Seating) -->
+            <div class="grid grid-cols-2 gap-3" id="scoreboard-grid">
                 <!-- Dynamic Player Cards -->
             </div>
 
-            <!-- Action Buttons -->
-            <div class="space-y-3 pt-2">
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="openRecordModal()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-extrabold py-4 px-3 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-base tracking-wide border-2 border-mjgreen">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                        <span>CATAT SKOR</span>
-                    </button>
+            <!-- HOST CONTROLS PANEL -->
+            <div id="host-controls-panel" class="space-y-2.5 pt-1">
+                <button onclick="openRecordModal()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-extrabold py-4 px-5 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-base tracking-wide">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>CATAT SKOR</span>
+                </button>
 
-                    <button onclick="recordDraw()" class="w-full bg-white hover:bg-mjlight text-mjgreen font-extrabold py-4 px-3 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-base tracking-wide border-2 border-mjgreen">
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button onclick="recordDraw()" class="bg-white hover:bg-mjlight text-mjgreen font-extrabold py-3 px-3 rounded-xl shadow-sm transition duration-200 flex items-center justify-center space-x-1.5 text-xs tracking-wide border border-mjgreen/35">
                         <i class="fa-solid fa-handshake"></i>
                         <span>IMBANG</span>
                     </button>
+
+                    <button onclick="openPenaltyModal()" class="bg-white hover:bg-red-50 text-mjdanger font-extrabold py-3 px-3 rounded-xl shadow-sm transition duration-200 flex items-center justify-center space-x-1.5 text-xs tracking-wide border border-mjdanger/35">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>PENALTI</span>
+                    </button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="openFinishModal()" class="w-full bg-mjgold hover:bg-amber-600 text-white font-extrabold py-3.5 px-3 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-sm tracking-wide border-2 border-mjgold">
+                <div class="grid grid-cols-3 gap-2.5">
+                    <button onclick="openFinishModal()" class="col-span-2 bg-mjgold hover:bg-amber-600 text-white font-extrabold py-3 px-4 rounded-xl btn-shadow transition duration-200 flex items-center justify-center space-x-1.5 text-xs tracking-wide">
                         <i class="fa-solid fa-flag-checkered"></i>
                         <span>PERMAINAN SELESAI</span>
                     </button>
 
-                    <button onclick="openPenaltyModal()" class="w-full bg-white hover:bg-red-50 text-mjdanger font-extrabold py-3.5 px-3 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-sm tracking-wide border-2 border-mjdanger">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span>PENALTI HU KURANG</span>
+                    <button onclick="openResetModal()" class="bg-white hover:bg-red-50 text-mjdanger/80 hover:text-mjdanger font-bold py-3 px-3 rounded-xl border border-mjdanger/25 transition duration-200 flex items-center justify-center space-x-1 text-xs">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Reset</span>
                     </button>
                 </div>
             </div>
 
-            <!-- History Logs -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-mjgreen/10 space-y-3">
+            <!-- VIEWER / NON-HOST BANNER -->
+            <div id="viewer-mode-banner" class="hidden bg-white rounded-2xl p-4 border-2 border-mjgreen/20 shadow-sm space-y-3 text-center">
+                <div class="flex items-center justify-center space-x-2 text-mjgreen font-bold text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Terhubung ke Room <span id="viewer-room-code-label" class="font-mono font-black">000000</span> (Mode Pantau)</span>
+                </div>
+                <p class="text-[11px] text-gray-500">Skor diperbarui otomatis secara real-time saat Host mencatat ronde.</p>
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                    <button type="button" onclick="takeOverHost()" class="bg-mjlight hover:bg-emerald-100 text-mjgreen border border-mjgreen/40 font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>Ambil Alih Host</span>
+                    </button>
+                    <button type="button" onclick="leaveOnlineRoom()" class="bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-mjdanger font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Keluar Room</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Riwayat Ronde -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-mjgreen/10 space-y-2.5">
                 <div class="flex items-center justify-between border-b border-mjbg pb-2">
                     <h3 class="font-bold text-xs uppercase tracking-wider text-mjgreen flex items-center space-x-1.5">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                         <span>Riwayat Ronde</span>
                     </h3>
-                    <button id="btn-undo" onclick="undoLastRound()" class="hidden text-xs text-mjdanger hover:underline font-semibold flex items-center space-x-1">
+                    <button id="btn-undo" onclick="undoLastRound()" class="hidden text-xs text-mjdanger hover:underline font-bold flex items-center space-x-1">
                         <i class="fa-solid fa-arrow-rotate-left"></i>
-                        <span>Batalkan Ronde Terakhir</span>
+                        <span>Batalkan Terakhir</span>
                     </button>
                 </div>
                 
-                <div id="history-container" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-                    <p class="text-xs text-center text-gray-400 py-4 italic">Belum ada skor yang dicatat.</p>
+                <div id="history-container" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    <p class="text-xs text-center text-gray-400 py-3 italic">Belum ada skor yang dicatat.</p>
                 </div>
             </div>
 
-            <button onclick="openResetModal()" class="w-full bg-transparent hover:bg-red-50 text-mjdanger border-2 border-mjdanger/30 hover:border-mjdanger font-bold py-3 px-6 rounded-2xl transition duration-200 flex items-center justify-center space-x-2 text-sm">
-                <i class="fa-solid fa-rotate-right"></i>
-                <span>ULANGI DARI AWAL</span>
-            </button>
         </section>
 
         <!-- ========================================== -->
         <!-- SCREEN 3: SKOR MAHJONG HARI INI            -->
         <!-- ========================================== -->
         <section id="screen-final" class="hidden space-y-4">
-            <div id="final-capture" class="bg-mjbg rounded-3xl p-5 space-y-5 border border-mjgreen/10">
+            <div id="final-capture" class="bg-mjbg rounded-3xl p-5 space-y-4 border border-mjgreen/15 shadow-sm">
                 <div class="text-center space-y-1 cursor-pointer select-none" onclick="replayFinalCelebration()" title="Ketuk untuk memutar ulang perayaan">
-                    <div class="text-4xl">🀅</div>
-                    <h2 class="text-2xl font-black tracking-wider uppercase text-mjgreen">SKOR MAHJONG HARI INI</h2>
+                    <div class="text-3xl">🀅</div>
+                    <h2 class="text-xl font-black tracking-wider uppercase text-mjgreen">SKOR MAHJONG HARI INI</h2>
                     <p class="text-[11px] font-semibold text-mjgreen/60">Sistem Bandung YDSP</p>
-                    <p class="text-sm font-bold text-mjgreen pt-1"><span id="final-date"></span> · Mulai <span id="final-start-time"></span></p>
-                    <div class="flex items-center justify-center space-x-4 text-xs text-mjtext/70 font-medium">
+                    <p class="text-xs font-bold text-mjgreen pt-1"><span id="final-date"></span> · Mulai <span id="final-start-time"></span></p>
+                    <div class="flex items-center justify-center space-x-4 text-[11px] text-mjtext/70 font-medium">
                         <span><i class="fa-regular fa-clock mr-1"></i><span id="final-duration"></span></span>
                         <span><i class="fa-solid fa-layer-group mr-1"></i><span id="final-rounds"></span> Ronde</span>
                     </div>
@@ -460,42 +534,81 @@
                     <!-- Dynamic ranking -->
                 </div>
 
-                <div class="text-lg text-mjgreen space-y-1.5 border-t border-mjgreen/15 pt-3">
+                <div class="space-y-1 text-sm text-mjgreen border-t border-mjgreen/15 pt-3">
                     <div><span class="font-medium">Tay Terbesar:</span> <span id="final-biggest-hand" class="font-bold"></span></div>
                     <div><span class="font-medium">Poin Ronde Terbesar:</span> <span id="final-biggest-round" class="font-bold"></span></div>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="shareFinal()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-extrabold py-3.5 rounded-2xl btn-shadow transition flex items-center justify-center space-x-2 text-sm tracking-wide">
+                <button onclick="shareFinal()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-extrabold py-3.5 rounded-2xl btn-shadow transition flex items-center justify-center space-x-2 text-xs tracking-wide">
                     <i class="fa-solid fa-share-nodes"></i>
                     <span>BAGIKAN</span>
                 </button>
-                <button onclick="saveFinal()" class="w-full bg-white hover:bg-mjlight text-mjgreen border-2 border-mjgreen font-extrabold py-3.5 rounded-2xl btn-shadow transition flex items-center justify-center space-x-2 text-sm tracking-wide">
+                <button onclick="saveFinal()" class="w-full bg-white hover:bg-mjlight text-mjgreen border-2 border-mjgreen font-extrabold py-3.5 rounded-2xl btn-shadow transition flex items-center justify-center space-x-2 text-xs tracking-wide">
                     <i class="fa-solid fa-download"></i>
                     <span>SIMPAN</span>
                 </button>
             </div>
 
-            <button onclick="openResetModal()" class="w-full bg-transparent hover:bg-red-50 text-mjdanger border-2 border-mjdanger/30 hover:border-mjdanger font-bold py-3 px-6 rounded-2xl transition duration-200 flex items-center justify-center space-x-2 text-sm">
+            <button id="btn-final-new-game" onclick="openResetModal()" class="w-full bg-white hover:bg-red-50 text-mjdanger border border-mjdanger/30 hover:border-mjdanger font-bold py-3.5 rounded-2xl transition duration-200 flex items-center justify-center space-x-2 text-xs">
                 <i class="fa-solid fa-rotate-right"></i>
                 <span>PERMAINAN BARU</span>
+            </button>
+
+            <button id="btn-final-leave-room" onclick="leaveOnlineRoom()" class="hidden w-full bg-white hover:bg-red-50 text-gray-700 hover:text-mjdanger border border-gray-300 font-bold py-3.5 rounded-2xl transition duration-200 flex items-center justify-center space-x-2 text-xs">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>KELUAR DARI ROOM</span>
             </button>
         </section>
 
     </main>
 
     <!-- Footer -->
-    <footer class="w-full text-center italic text-xs leading-relaxed py-4 px-4" style="color: #A59C91;">
-        <p>budijoe©2026</p>
-        <p>All rights reserved.</p>
+    <footer class="w-full text-center italic text-[11px] py-3 px-4 shrink-0" style="color: #A59C91;">
+        <span>budijoe©2026 · All rights reserved.</span>
     </footer>
+
+    <!-- ========================================== -->
+    <!-- MODAL: GABUNG ROOM ONLINE (6 DIGIT)         -->
+    <!-- ========================================== -->
+    <div id="modal-join-room" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-mjgreen/20 text-center space-y-4">
+            <div class="w-12 h-12 bg-mjlight text-mjgreen rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-satellite-dish"></i>
+            </div>
+            <div class="space-y-1">
+                <h3 class="font-black text-xl tracking-wider text-mjgreen uppercase">GABUNG ROOM ONLINE</h3>
+                <p class="text-xs text-gray-500">Masukkan 6 digit kode Room yang tampil di layar Host</p>
+            </div>
+
+            <div class="space-y-2">
+                <input type="text" id="join-room-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); hideJoinRoomError();"
+                    onkeydown="if(event.key==='Enter') submitJoinRoom()"
+                    class="w-full text-center text-3xl font-black tracking-[0.25em] py-3.5 rounded-2xl border-2 border-mjgreen/40 focus:border-mjgreen focus:ring-4 focus:ring-mjgreen/20 outline-none bg-mjbg text-mjgreen font-mono">
+                <p id="join-room-error" class="hidden text-xs font-semibold text-mjdanger">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i><span></span>
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button type="button" onclick="closeJoinRoomModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-sm transition">
+                    BATAL
+                </button>
+                <button type="button" id="btn-submit-join" onclick="submitJoinRoom()" class="w-full bg-mjgreen hover:bg-mjaccent text-white font-bold py-3 rounded-xl text-sm transition btn-shadow flex items-center justify-center space-x-1.5">
+                    <span>GABUNG</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ========================================== -->
     <!-- MODAL: CATAT SKOR (MULTISTEP)               -->
     <!-- ========================================== -->
     <div id="modal-record" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-mjgreen/20 space-y-5">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-mjgreen/20 space-y-5">
             
             <!-- Modal Header -->
             <div class="flex items-center justify-between border-b border-mjbg pb-3">
@@ -546,7 +659,7 @@
                 <!-- Sub-step jika memilih Buangan -->
                 <div id="discard-selector-container" class="hidden pt-2 border-t border-gray-100 space-y-2">
                     <p class="text-sm font-semibold text-center text-mjtext">Buangan siapa?</p>
-                    <div class="grid grid-cols-2 gap-2" id="discarder-selection-grid">
+                    <div class="grid grid-cols-3 gap-2" id="discarder-selection-grid">
                         <!-- Dynamic Discarder Buttons -->
                     </div>
                 </div>
@@ -591,7 +704,7 @@
 
                 <!-- TOMBOL BANTU HITUNGKAN TAY (Kuning Full Width) -->
                 <button type="button" onclick="openScorerFromRecord()" class="w-full bg-mjgold hover:bg-amber-600 text-white font-extrabold py-3.5 px-4 rounded-2xl btn-shadow transition duration-200 flex items-center justify-center space-x-2 text-lg tracking-wide border-2 border-amber-600">
-					<img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/budijoe-pixel.svg" alt="Budi" class="w-7 h-7 shrink-0 object-contain" style="image-rendering: pixelated;">
+                    <img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/budijoe-pixel.svg" alt="Budi" class="w-7 h-7 shrink-0 object-contain" style="image-rendering: pixelated;">
                     <span>BUDI, INI DAPAT BERAPA?</span>
                 </button>
 
@@ -614,15 +727,15 @@
     <!-- MODAL OVERLAY: SCORER / KALKULATOR TANGAN  -->
     <!-- ========================================== -->
     <div id="modal-scorer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-        <div class="bg-mjbg max-w-md w-full rounded-3xl shadow-2xl border border-mjgreen/20 overflow-hidden my-auto flex flex-col max-h-[95vh]">
+        <div class="bg-mjbg max-w-lg w-full rounded-3xl shadow-2xl border border-mjgreen/20 overflow-hidden my-auto flex flex-col max-h-[95vh]">
             
             <!-- Scorer Header -->
             <header class="bg-mjgreen text-white py-3.5 px-4 flex items-center justify-between shrink-0 shadow-md">
-				<div class="flex items-center space-x-2.5">
-        			<img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/budijoe-pixel.svg" 
-             			alt="Budi" 
-             			class="w-8 h-8 shrink-0 object-contain" 
-             			style="image-rendering: pixelated;">
+                <div class="flex items-center space-x-2.5">
+                    <img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/budijoe-pixel.svg" 
+                         alt="Budi" 
+                         class="w-8 h-8 shrink-0 object-contain" 
+                         style="image-rendering: pixelated;">
                     <div>
                         <h2 class="text-sm font-black tracking-wider uppercase">COBA BUDI BANTU HITUNGKAN</h2>
                         <p id="scorer-wind-subtitle" class="text-[10px] text-mjgold font-semibold">Angin Meja: Timur | Angin Duduk: Timur</p>
@@ -646,7 +759,7 @@
         </div>
     </div>
 
-    <!-- Toast Notification for Scorer -->
+    <!-- Toast Notification -->
     <div id="toastMsg" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black/85 text-white px-4 py-2 rounded-full text-xs font-medium shadow-lg z-50 hidden"></div>
 
     <!-- ========================================== -->
@@ -660,7 +773,7 @@
             
             <div class="space-y-1">
                 <h3 class="font-bold text-lg text-gray-800">ULANGI DARI AWAL?</h3>
-                <p class="text-xs text-gray-500">Semua nama pemain dan riwayat skor akan terhapus dan direset ke 0.</p>
+                <p id="reset-modal-desc" class="text-xs text-gray-500">Semua nama pemain dan riwayat skor akan terhapus dan direset ke 0.</p>
             </div>
 
             <div class="grid grid-cols-2 gap-3 pt-2">
@@ -668,7 +781,13 @@
                     TIDAK
                 </button>
                 <button onclick="resetApp()" class="w-full bg-mjdanger hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition btn-shadow">
-                    YA
+                    YA, RESET
+                </button>
+            </div>
+
+            <div id="reset-leave-room-wrap" class="hidden pt-2 border-t border-gray-100">
+                <button type="button" onclick="closeResetModal(); leaveOnlineRoom();" class="w-full text-xs font-bold text-gray-500 hover:text-mjdanger py-1.5 transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i>Keluar dari Room Online
                 </button>
             </div>
         </div>
@@ -786,595 +905,696 @@
 
     <!-- Screenshot library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, off, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBuAhFdYzb3eGFO8fNzL-0n_pIorCryhyM",
+            authDomain: "skor-mahjong.firebaseapp.com",
+            databaseURL: "https://skor-mahjong-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "skor-mahjong",
+            storageBucket: "skor-mahjong.firebasestorage.app",
+            messagingSenderId: "309152185233",
+            appId: "1:309152185233:web:1c76986697481d67d27830",
+            measurementId: "G-L60NDEK4M8"
+        };
+
+        const firebaseApp = initializeApp(firebaseConfig);
+        const db = getDatabase(firebaseApp);
+
+        let activeRoomRef = null;
+        let activeRoomListener = null;
+        let isFirebaseConnected = false;
+
+        // Pantau status koneksi Firebase Realtime Database
+        const connectedRef = ref(db, '.info/connected');
+        onValue(connectedRef, (snap) => {
+            isFirebaseConnected = snap.val() === true;
+            if (typeof window.updateRoomBadgeUI === 'function') {
+                window.updateRoomBadgeUI(isFirebaseConnected);
+            }
+        });
+
+        window.fbRoomService = {
+            isConnected() {
+                return isFirebaseConnected;
+            },
+            async generateUniqueCode() {
+                for (let attempt = 0; attempt < 8; attempt++) {
+                    const code = String(Math.floor(100000 + Math.random() * 900000));
+                    try {
+                        const snap = await get(ref(db, `rooms/${code}`));
+                        if (!snap.exists()) return code;
+                    } catch (e) {
+                        return code;
+                    }
+                }
+                return String(Math.floor(100000 + Math.random() * 900000));
+            },
+            async createRoom(code, gameState) {
+                const roomRef = ref(db, `rooms/${code}`);
+                await set(roomRef, {
+                    players: gameState.players,
+                    roundHistory: gameState.roundHistory || [],
+                    currentRound: gameState.currentRound || 1,
+                    startedAt: gameState.startedAt || Date.now(),
+                    finishedAt: gameState.finishedAt || null,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+            },
+            async checkRoomExists(code) {
+                const snap = await get(ref(db, `rooms/${code}`));
+                return snap.exists() ? snap.val() : null;
+            },
+            async pushState(code, gameState) {
+                if (!code) return;
+                try {
+                    const roomRef = ref(db, `rooms/${code}`);
+                    await set(roomRef, {
+                        players: gameState.players,
+                        roundHistory: gameState.roundHistory || [],
+                        currentRound: gameState.currentRound || 1,
+                        startedAt: gameState.startedAt || Date.now(),
+                        finishedAt: gameState.finishedAt || null,
+                        updatedAt: serverTimestamp()
+                    });
+                } catch (err) {
+                    console.error('Gagal sinkron ke Firebase:', err);
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('Koneksi lambat, perubahan tersimpan lokal.');
+                    }
+                }
+            },
+            subscribeRoom(code, onDataCallback) {
+                this.unsubscribeRoom();
+                if (!code) return;
+                activeRoomRef = ref(db, `rooms/${code}`);
+                activeRoomListener = onValue(activeRoomRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        onDataCallback(snapshot.val());
+                    }
+                }, (err) => {
+                    console.error('Listener Firebase error:', err);
+                });
+            },
+            unsubscribeRoom() {
+                if (activeRoomRef && activeRoomListener) {
+                    off(activeRoomRef, 'value', activeRoomListener);
+                }
+                activeRoomRef = null;
+                activeRoomListener = null;
+            }
+        };
+
+        // Trigger auto-reconnect jika sesi online tersimpan atau ?room=XXXXXX ada di URL
+        window.dispatchEvent(new Event('fb-ready'));
+    </script>
 
     <!-- Application Script -->
     <script>
-       	// ==========================================
-	// HAPTIC & AUDIO FEEDBACK (NUDGE STYLE)
-	// ==========================================
-	let sharedAudioCtx = null;
+        const IS_TV_DISPLAY = false;
 
-	function getAudioContext() {
-		try {
-			if (!sharedAudioCtx) {
-				const AudioCtx = window.AudioContext || window.webkitAudioContext;
-				if (AudioCtx) sharedAudioCtx = new AudioCtx();
-			}
-			if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
-				sharedAudioCtx.resume();
-			}
-			return sharedAudioCtx;
-		} catch (e) {
-			return null;
-		}
-	}
-
-	function triggerHaptic(duration = 35) {
-    	// 1. Efek Getar (Vibration API)
-   	 if ("vibrate" in navigator) {
-        try {
-            navigator.vibrate(duration);
-        } catch (e) {
-            // Diabaikan jika diblokir oleh policy browser
+        // ==========================================
+        // FULLSCREEN HELPER FOR TV DISPLAY
+        // ==========================================
+        function toggleTvFullscreen() {
+            triggerHaptic(25);
+            const icon = document.getElementById('fullscreen-icon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    if (icon) icon.className = 'fa-solid fa-compress';
+                }).catch(() => {});
+            } else {
+                document.exitFullscreen().then(() => {
+                    if (icon) icon.className = 'fa-solid fa-expand';
+                }).catch(() => {});
+            }
         }
-    }
 
-    // 2. Efek Suara Ketukan / Nudge (Web Audio API)
-    try {
-        const audioCtx = getAudioContext();
-        if (audioCtx) {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+        // ==========================================
+        // HAPTIC & AUDIO FEEDBACK (NUDGE STYLE)
+        // ==========================================
+        let sharedAudioCtx = null;
 
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(2800, audioCtx.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 0.02);
-
-            gainNode.gain.setValueAtTime(0.10, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.02);
-        }
-    } catch (e) {}
-}
-
-    // Suara pop lembut (subtle pop + warm harmonic sparkle) saat angka akhir muncul & confetti meledak
-    function playSubtlePopSound() {
-        try {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const now = ctx.currentTime;
-
-            // 1. Soft bubble/cork pop (warm sine sweep)
-            const popOsc = ctx.createOscillator();
-            const popGain = ctx.createGain();
-            popOsc.type = 'sine';
-            popOsc.frequency.setValueAtTime(210, now);
-            popOsc.frequency.exponentialRampToValueAtTime(520, now + 0.045);
-            popOsc.frequency.exponentialRampToValueAtTime(320, now + 0.095);
-
-            popGain.gain.setValueAtTime(0.001, now);
-            popGain.gain.linearRampToValueAtTime(0.095, now + 0.012);
-            popGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.11);
-
-            popOsc.connect(popGain);
-            popGain.connect(ctx.destination);
-            popOsc.start(now);
-            popOsc.stop(now + 0.115);
-
-            // 2. Subtle delicate sparkle overtone (very low volume)
-            const chimeOsc = ctx.createOscillator();
-            const chimeGain = ctx.createGain();
-            chimeOsc.type = 'triangle';
-            chimeOsc.frequency.setValueAtTime(1046.5, now + 0.02); // C6
-            chimeOsc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08); // E6
-
-            chimeGain.gain.setValueAtTime(0.0005, now + 0.02);
-            chimeGain.gain.linearRampToValueAtTime(0.032, now + 0.035);
-            chimeGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.24);
-
-            chimeOsc.connect(chimeGain);
-            chimeGain.connect(ctx.destination);
-            chimeOsc.start(now + 0.02);
-            chimeOsc.stop(now + 0.25);
-        } catch(e) {}
-    }
-
-    // ==========================================
-    // SUARA PERAYAAN PERMAINAN SELESAI
-    // ==========================================
-    // 4. Suara Mahjong Tile Clack + Chime (Benturan Batu Mahjong & Lonceng)
-    function playMahjongClackAndChime() {
-        try {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const now = ctx.currentTime;
-
-            // Dua benturan batu mahjong yang renyah (clack-clack)
-            [0, 0.075].forEach((offset, idx) => {
-                // Transient noise burst (tekstur benturan akrilik/bambu keras)
-                const bufferSize = Math.floor(ctx.sampleRate * 0.022);
-                const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-                const data = noiseBuffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.22));
+        function getAudioContext() {
+            try {
+                if (!sharedAudioCtx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) sharedAudioCtx = new AudioCtx();
                 }
-                const noise = ctx.createBufferSource();
-                noise.buffer = noiseBuffer;
+                if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+                    sharedAudioCtx.resume();
+                }
+                return sharedAudioCtx;
+            } catch (e) {
+                return null;
+            }
+        }
 
-                const filter = ctx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.setValueAtTime(idx === 0 ? 3100 : 3450, now + offset);
-                filter.Q.setValueAtTime(3.2, now + offset);
+        function triggerHaptic(duration = 35) {
+            if ("vibrate" in navigator) {
+                try {
+                    navigator.vibrate(duration);
+                } catch (e) {}
+            }
 
-                const noiseGain = ctx.createGain();
-                noiseGain.gain.setValueAtTime(0.32, now + offset);
-                noiseGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.022);
+            try {
+                const audioCtx = getAudioContext();
+                if (audioCtx) {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
 
-                noise.connect(filter);
-                filter.connect(noiseGain);
-                noiseGain.connect(ctx.destination);
-                noise.start(now + offset);
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(2800, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 0.02);
 
-                // Resonansi nada tinggi singkat batu mahjong
-                const clackOsc = ctx.createOscillator();
-                const clackGain = ctx.createGain();
-                clackOsc.type = 'triangle';
-                clackOsc.frequency.setValueAtTime(idx === 0 ? 1850 : 2120, now + offset);
-                clackOsc.frequency.exponentialRampToValueAtTime(980, now + offset + 0.028);
+                    gainNode.gain.setValueAtTime(0.10, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
 
-                clackGain.gain.setValueAtTime(0.14, now + offset);
-                clackGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.03);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
 
-                clackOsc.connect(clackGain);
-                clackGain.connect(ctx.destination);
-                clackOsc.start(now + offset);
-                clackOsc.stop(now + offset + 0.032);
-            });
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.02);
+                }
+            } catch (e) {}
+        }
 
-            // Disusul denting lonceng / koin emas (bell chime) bergema lembut
-            const chimeNotes = [
-                { freq: 1318.51, delay: 0.17, dur: 0.85, vol: 0.085 }, // E6
-                { freq: 1567.98, delay: 0.26, dur: 0.95, vol: 0.095 }, // G6
-                { freq: 2093.00, delay: 0.36, dur: 1.25, vol: 0.11 }   // C7
-            ];
+        function playSubtlePopSound() {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
 
-            chimeNotes.forEach(n => {
+                const popOsc = ctx.createOscillator();
+                const popGain = ctx.createGain();
+                popOsc.type = 'sine';
+                popOsc.frequency.setValueAtTime(210, now);
+                popOsc.frequency.exponentialRampToValueAtTime(520, now + 0.045);
+                popOsc.frequency.exponentialRampToValueAtTime(320, now + 0.095);
+
+                popGain.gain.setValueAtTime(0.001, now);
+                popGain.gain.linearRampToValueAtTime(0.095, now + 0.012);
+                popGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.11);
+
+                popOsc.connect(popGain);
+                popGain.connect(ctx.destination);
+                popOsc.start(now);
+                popOsc.stop(now + 0.115);
+
+                const chimeOsc = ctx.createOscillator();
+                const chimeGain = ctx.createGain();
+                chimeOsc.type = 'triangle';
+                chimeOsc.frequency.setValueAtTime(1046.5, now + 0.02);
+                chimeOsc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08);
+
+                chimeGain.gain.setValueAtTime(0.0005, now + 0.02);
+                chimeGain.gain.linearRampToValueAtTime(0.032, now + 0.035);
+                chimeGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.24);
+
+                chimeOsc.connect(chimeGain);
+                chimeGain.connect(ctx.destination);
+                chimeOsc.start(now + 0.02);
+                chimeOsc.stop(now + 0.25);
+            } catch(e) {}
+        }
+
+        function playMahjongClackAndChime() {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+
+                [0, 0.075].forEach((offset, idx) => {
+                    const bufferSize = Math.floor(ctx.sampleRate * 0.022);
+                    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const data = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.22));
+                    }
+                    const noise = ctx.createBufferSource();
+                    noise.buffer = noiseBuffer;
+
+                    const filter = ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(idx === 0 ? 3100 : 3450, now + offset);
+                    filter.Q.setValueAtTime(3.2, now + offset);
+
+                    const noiseGain = ctx.createGain();
+                    noiseGain.gain.setValueAtTime(0.32, now + offset);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.022);
+
+                    noise.connect(filter);
+                    filter.connect(noiseGain);
+                    noiseGain.connect(ctx.destination);
+                    noise.start(now + offset);
+
+                    const clackOsc = ctx.createOscillator();
+                    const clackGain = ctx.createGain();
+                    clackOsc.type = 'triangle';
+                    clackOsc.frequency.setValueAtTime(idx === 0 ? 1850 : 2120, now + offset);
+                    clackOsc.frequency.exponentialRampToValueAtTime(980, now + offset + 0.028);
+
+                    clackGain.gain.setValueAtTime(0.14, now + offset);
+                    clackGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.03);
+
+                    clackOsc.connect(clackGain);
+                    clackGain.connect(ctx.destination);
+                    clackOsc.start(now + offset);
+                    clackOsc.stop(now + offset + 0.032);
+                });
+
+                const chimeNotes = [
+                    { freq: 1318.51, delay: 0.17, dur: 0.85, vol: 0.085 },
+                    { freq: 1567.98, delay: 0.26, dur: 0.95, vol: 0.095 },
+                    { freq: 2093.00, delay: 0.36, dur: 1.25, vol: 0.11 }
+                ];
+
+                chimeNotes.forEach(n => {
+                    const osc = ctx.createOscillator();
+                    const harmonic = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(n.freq, now + n.delay);
+
+                    harmonic.type = 'sine';
+                    harmonic.frequency.setValueAtTime(n.freq * 2, now + n.delay);
+
+                    const harmGain = ctx.createGain();
+                    harmGain.gain.setValueAtTime(0.22, now + n.delay);
+
+                    gain.gain.setValueAtTime(0.0005, now + n.delay);
+                    gain.gain.linearRampToValueAtTime(n.vol, now + n.delay + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.0004, now + n.delay + n.dur);
+
+                    harmonic.connect(harmGain);
+                    harmGain.connect(gain);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start(now + n.delay);
+                    harmonic.start(now + n.delay);
+                    osc.stop(now + n.delay + n.dur + 0.02);
+                    harmonic.stop(now + n.delay + n.dur + 0.02);
+                });
+            } catch (e) {}
+        }
+
+        function playTallyTickSound(progress = 0) {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+
                 const osc = ctx.createOscillator();
-                const harmonic = ctx.createOscillator();
                 const gain = ctx.createGain();
+                osc.type = 'triangle';
+                const baseFreq = 720 + progress * 480;
+                osc.frequency.setValueAtTime(baseFreq, now);
+                osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.25, now + 0.022);
 
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(n.freq, now + n.delay);
-
-                harmonic.type = 'sine';
-                harmonic.frequency.setValueAtTime(n.freq * 2, now + n.delay);
-
-                const harmGain = ctx.createGain();
-                harmGain.gain.setValueAtTime(0.22, now + n.delay);
-
-                gain.gain.setValueAtTime(0.0005, now + n.delay);
-                gain.gain.linearRampToValueAtTime(n.vol, now + n.delay + 0.015);
-                gain.gain.exponentialRampToValueAtTime(0.0004, now + n.delay + n.dur);
-
-                harmonic.connect(harmGain);
-                harmGain.connect(gain);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                osc.start(now + n.delay);
-                harmonic.start(now + n.delay);
-                osc.stop(now + n.delay + n.dur + 0.02);
-                harmonic.stop(now + n.delay + n.dur + 0.02);
-            });
-        } catch (e) {}
-    }
-
-    // 5. Suara Slot/Coin Tally (Tick-tick-tick cepat saat count-up + Ding! nyaring di akhir)
-    function playTallyTickSound(progress = 0) {
-        try {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const now = ctx.currentTime;
-
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'triangle';
-            // Nada naik perlahan seiring progres hitungan
-            const baseFreq = 720 + progress * 480;
-            osc.frequency.setValueAtTime(baseFreq, now);
-            osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.25, now + 0.022);
-
-            gain.gain.setValueAtTime(0.001, now);
-            gain.gain.linearRampToValueAtTime(0.055, now + 0.004);
-            gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.025);
-
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.028);
-        } catch (e) {}
-    }
-
-    function playTallyDingSound() {
-        try {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const now = ctx.currentTime;
-
-            // Denting "Ding!" nyaring & jernih saat angka Juara 1 berhenti
-            const freqs = [1567.98, 2349.32, 3135.96]; // G6 + overtones
-            freqs.forEach((f, idx) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(f, now);
-
-                const peak = idx === 0 ? 0.14 : (idx === 1 ? 0.05 : 0.025);
-                const dur = idx === 0 ? 0.95 : 0.55;
-
-                gain.gain.setValueAtTime(0.0008, now);
-                gain.gain.linearRampToValueAtTime(peak, now + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(0.055, now + 0.004);
+                gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.025);
 
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start(now);
-                osc.stop(now + dur + 0.02);
-            });
-        } catch (e) {}
-    }
+                osc.stop(now + 0.028);
+            } catch (e) {}
+        }
 
-    // Sistem partikel confetti (ledakan titik elemen & hujan konfeti + tile mahjong)
-    let confettiParticles = [];
-    let confettiAnimFrame = null;
-    let scoreCounterFrame = null;
-    let championTallyTimer = null;
-    let championCountFrame = null;
+        function playTallyDingSound() {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
 
-    // Preload ikon SVG kartu Mahjong untuk hujan konfeti layar akhir
-    const MAHJONG_CONFETTI_SVGS = [
-        'svg/03-red-dragon.svg',
-        'svg/02-green-dragon.svg',
-        'svg/01-white-dragon.svg',
-        'svg/04-east-wind.svg',
-        'svg/44-joker-clown.svg',
-        'svg/08-characters-1.svg',
-        'svg/26-bamboos-1.svg',
-        'svg/17-circles-1-variant-4.svg',
-        'svg/35-spring.svg'
-    ];
-    let loadedMahjongTileImages = [];
+                const freqs = [1567.98, 2349.32, 3135.96];
+                freqs.forEach((f, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, now);
 
-    function preloadMahjongConfettiImages() {
-        if (loadedMahjongTileImages.length > 0) return;
-        const base = "https://raw.githubusercontent.com/budijoe/skor-mahjong/main/";
-        MAHJONG_CONFETTI_SVGS.forEach(path => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.src = base + path;
-            loadedMahjongTileImages.push(img);
-        });
-    }
+                    const peak = idx === 0 ? 0.14 : (idx === 1 ? 0.05 : 0.025);
+                    const dur = idx === 0 ? 0.95 : 0.55;
 
-    function launchConfettiFromElement(targetEl) {
-        const canvas = document.getElementById('confettiCanvas');
-        if (!canvas || !targetEl) return;
+                    gain.gain.setValueAtTime(0.0008, now);
+                    gain.gain.linearRampToValueAtTime(peak, now + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.0005, now + dur);
 
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + dur + 0.02);
+                });
+            } catch (e) {}
+        }
 
-        const rect = targetEl.getBoundingClientRect();
-        const originX = rect.left + rect.width / 2;
-        const originY = rect.top + rect.height / 2;
+        let confettiParticles = [];
+        let confettiAnimFrame = null;
+        let scoreCounterFrame = null;
+        let championTallyTimer = null;
+        let championCountFrame = null;
 
-        // Palet warna bertema Mahjong YDSP (emas, hijau giok, merah naga, putih gading)
-        const colors = ['#F6C344', '#FFE082', '#E53E3E', '#38A169', '#FFFFFF', '#D69D2E', '#68D391'];
-        const shapes = ['rect', 'circle', 'ribbon'];
-        const particleCount = 46;
+        const MAHJONG_CONFETTI_SVGS = [
+            'svg/03-red-dragon.svg',
+            'svg/02-green-dragon.svg',
+            'svg/01-white-dragon.svg',
+            'svg/04-east-wind.svg',
+            'svg/44-joker-clown.svg',
+            'svg/08-characters-1.svg',
+            'svg/26-bamboos-1.svg',
+            'svg/17-circles-1-variant-4.svg',
+            'svg/35-spring.svg'
+        ];
+        let loadedMahjongTileImages = [];
 
-        for (let i = 0; i < particleCount; i++) {
-            const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.35;
-            const speed = 2.4 + Math.random() * 5.2;
-            confettiParticles.push({
-                x: originX + (Math.random() - 0.5) * 14,
-                y: originY + (Math.random() - 0.5) * 8,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed - 1.8,
-                gravity: 0.16 + Math.random() * 0.06,
-                drag: 0.965,
-                size: 4.5 + Math.random() * 4.5,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                shape: shapes[Math.floor(Math.random() * shapes.length)],
-                rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.24,
-                wobble: Math.random() * Math.PI * 2,
-                wobbleSpeed: 0.08 + Math.random() * 0.08,
-                alpha: 1,
-                decay: 0.013 + Math.random() * 0.008
+        function preloadMahjongConfettiImages() {
+            if (loadedMahjongTileImages.length > 0) return;
+            const base = "https://raw.githubusercontent.com/budijoe/skor-mahjong/main/";
+            MAHJONG_CONFETTI_SVGS.forEach(path => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = base + path;
+                loadedMahjongTileImages.push(img);
             });
         }
 
-        if (!confettiAnimFrame) {
-            renderConfettiLoop();
-        }
-    }
+        function launchConfettiFromElement(targetEl) {
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas || !targetEl) return;
 
-    // 1. Hujan Konfeti & Tile Mahjong (3.5 detik saat layar hasil akhir terbuka)
-    function launchMahjongConfettiRain() {
-        const canvas = document.getElementById('confettiCanvas');
-        if (!canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
 
-        preloadMahjongConfettiImages();
+            const rect = targetEl.getBoundingClientRect();
+            const originX = rect.left + rect.width / 2;
+            const originY = rect.top + rect.height / 2;
 
-        const dpr = window.devicePixelRatio || 1;
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
+            const colors = ['#F6C344', '#FFE082', '#E53E3E', '#38A169', '#FFFFFF', '#D69D2E', '#68D391'];
+            const shapes = ['rect', 'circle', 'ribbon'];
+            const particleCount = 46;
 
-        // Hijau zamrud (#084413), emas (#d69d2e), merah (#c53030), ditambah rectangle putih (#FFFFFF)
-        const colors = ['#084413', '#d69d2e', '#c53030', '#FFFFFF'];
-        const totalParticles = 78;
-
-        for (let i = 0; i < totalParticles; i++) {
-            const isTile = i % 5 === 0; // Sesekali diselingi ikon kartu mahjong (~20%)
-            const tileImg = loadedMahjongTileImages.length > 0
-                ? loadedMahjongTileImages[Math.floor(Math.random() * loadedMahjongTileImages.length)]
-                : null;
-
-            confettiParticles.push({
-                x: Math.random() * width,
-                y: -25 - Math.random() * (height * 0.65),
-                vx: (Math.random() - 0.5) * 1.6,
-                vy: 1.8 + Math.random() * 2.4,
-                gravity: 0.025 + Math.random() * 0.02,
-                drag: 0.992,
-                size: isTile ? (22 + Math.random() * 6) : (7 + Math.random() * 5),
-                color: colors[Math.floor(Math.random() * colors.length)],
-                shape: isTile ? 'mahjong_tile' : 'confetti_rect',
-                tileImg: tileImg,
-                rotation: (Math.random() - 0.5) * 0.8,
-                rotationSpeed: (Math.random() - 0.5) * 0.07,
-                wobble: Math.random() * Math.PI * 2,
-                wobbleSpeed: 0.04 + Math.random() * 0.04,
-                alpha: 1,
-                decay: 0.0042 + Math.random() * 0.0018, // Melayang 3–4 detik sebelum menghilang perlahan
-                bornAt: performance.now(),
-                fadeAfterMs: 2600 + Math.random() * 900
-            });
-        }
-
-        if (!confettiAnimFrame) {
-            renderConfettiLoop();
-        }
-    }
-
-    function drawRoundedRectPath(ctx, x, y, w, h, r) {
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-    }
-
-    function renderConfettiLoop(now = performance.now()) {
-        const canvas = document.getElementById('confettiCanvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        ctx.clearRect(0, 0, width, height);
-
-        for (let i = confettiParticles.length - 1; i >= 0; i--) {
-            const p = confettiParticles[i];
-            p.vx *= p.drag;
-            p.vy = p.vy * p.drag + p.gravity;
-            p.x += p.vx + Math.sin(p.wobble) * (p.shape === 'mahjong_tile' ? 0.85 : 0.55);
-            p.y += p.vy;
-            p.rotation += p.rotationSpeed;
-            p.wobble += p.wobbleSpeed;
-
-            if (p.fadeAfterMs) {
-                if (now - p.bornAt > p.fadeAfterMs) {
-                    p.alpha -= p.decay * 2.4;
-                }
-            } else {
-                p.alpha -= p.decay;
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.35;
+                const speed = 2.4 + Math.random() * 5.2;
+                confettiParticles.push({
+                    x: originX + (Math.random() - 0.5) * 14,
+                    y: originY + (Math.random() - 0.5) * 8,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 1.8,
+                    gravity: 0.16 + Math.random() * 0.06,
+                    drag: 0.965,
+                    size: 4.5 + Math.random() * 4.5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    shape: shapes[Math.floor(Math.random() * shapes.length)],
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.24,
+                    wobble: Math.random() * Math.PI * 2,
+                    wobbleSpeed: 0.08 + Math.random() * 0.08,
+                    alpha: 1,
+                    decay: 0.013 + Math.random() * 0.008
+                });
             }
 
-            if (p.alpha <= 0 || p.y > height + 40) {
-                confettiParticles.splice(i, 1);
-                continue;
+            if (!confettiAnimFrame) {
+                renderConfettiLoop();
             }
-
-            ctx.save();
-            ctx.globalAlpha = Math.max(0, p.alpha);
-            ctx.translate(p.x, p.y);
-            ctx.rotate(p.rotation);
-
-            if (p.shape === 'mahjong_tile') {
-                const tileW = p.size * 0.76;
-                const tileH = p.size;
-                // Badan batu mahjong putih gading dengan bayangan hijau giok
-                ctx.fillStyle = '#084413';
-                drawRoundedRectPath(ctx, -tileW / 2 + 1.5, -tileH / 2 + 2, tileW, tileH, 3.5);
-                ctx.fill();
-
-                ctx.fillStyle = '#FFFFFF';
-                drawRoundedRectPath(ctx, -tileW / 2, -tileH / 2, tileW, tileH, 3.5);
-                ctx.fill();
-
-                ctx.strokeStyle = '#cbd5e0';
-                ctx.lineWidth = 0.8;
-                ctx.stroke();
-
-                if (p.tileImg && p.tileImg.complete && p.tileImg.naturalWidth > 0) {
-                    ctx.drawImage(p.tileImg, -tileW * 0.4, -tileH * 0.4, tileW * 0.8, tileH * 0.8);
-                }
-            } else if (p.shape === 'confetti_rect') {
-                // Konfeti persegi panjang (termasuk rectangle putih dengan garis tepi tipis agar terlihat jelas)
-                const w = p.size * 1.15;
-                const h = p.size * 0.55;
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-w / 2, -h / 2, w, h);
-                if (p.color === '#FFFFFF') {
-                    ctx.strokeStyle = 'rgba(8, 68, 19, 0.25)';
-                    ctx.lineWidth = 0.6;
-                    ctx.strokeRect(-w / 2, -h / 2, w, h);
-                }
-            } else if (p.shape === 'circle') {
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(0, 0, p.size * 0.48, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (p.shape === 'ribbon') {
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-p.size * 0.7, -p.size * 0.25, p.size * 1.4, p.size * 0.5);
-            } else {
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-p.size * 0.45, -p.size * 0.45, p.size * 0.9, p.size * 0.9);
-            }
-            ctx.restore();
         }
 
-        if (confettiParticles.length > 0) {
-            confettiAnimFrame = requestAnimationFrame(renderConfettiLoop);
-        } else {
-            confettiAnimFrame = null;
+        function launchMahjongConfettiRain() {
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+
+            preloadMahjongConfettiImages();
+
+            const dpr = window.devicePixelRatio || 1;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const colors = ['#084413', '#d69d2e', '#c53030', '#FFFFFF'];
+            const totalParticles = 78;
+
+            for (let i = 0; i < totalParticles; i++) {
+                const isTile = i % 5 === 0;
+                const tileImg = loadedMahjongTileImages.length > 0
+                    ? loadedMahjongTileImages[Math.floor(Math.random() * loadedMahjongTileImages.length)]
+                    : null;
+
+                confettiParticles.push({
+                    x: Math.random() * width,
+                    y: -25 - Math.random() * (height * 0.65),
+                    vx: (Math.random() - 0.5) * 1.6,
+                    vy: 1.8 + Math.random() * 2.4,
+                    gravity: 0.025 + Math.random() * 0.02,
+                    drag: 0.992,
+                    size: isTile ? (22 + Math.random() * 6) : (7 + Math.random() * 5),
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    shape: isTile ? 'mahjong_tile' : 'confetti_rect',
+                    tileImg: tileImg,
+                    rotation: (Math.random() - 0.5) * 0.8,
+                    rotationSpeed: (Math.random() - 0.5) * 0.07,
+                    wobble: Math.random() * Math.PI * 2,
+                    wobbleSpeed: 0.04 + Math.random() * 0.04,
+                    alpha: 1,
+                    decay: 0.0042 + Math.random() * 0.0018,
+                    bornAt: performance.now(),
+                    fadeAfterMs: 2600 + Math.random() * 900
+                });
+            }
+
+            if (!confettiAnimFrame) {
+                renderConfettiLoop();
+            }
+        }
+
+        function drawRoundedRectPath(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function renderConfettiLoop(now = performance.now()) {
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
             ctx.clearRect(0, 0, width, height);
-        }
-    }
 
-    // Animasi hitung angka + pop + confetti + suara pop (Kalkulator Tangan)
-    function triggerScoreCelebration(finalScore, instantPop = false) {
-        const scoreValEl = document.getElementById('finalScoreVal');
-        const scoreBoxEl = document.getElementById('finalScoreBox');
-        if (!scoreValEl) return;
+            for (let i = confettiParticles.length - 1; i >= 0; i--) {
+                const p = confettiParticles[i];
+                p.vx *= p.drag;
+                p.vy = p.vy * p.drag + p.gravity;
+                p.x += p.vx + Math.sin(p.wobble) * (p.shape === 'mahjong_tile' ? 0.85 : 0.55);
+                p.y += p.vy;
+                p.rotation += p.rotationSpeed;
+                p.wobble += p.wobbleSpeed;
 
-        if (scoreCounterFrame) {
-            cancelAnimationFrame(scoreCounterFrame);
-            scoreCounterFrame = null;
-        }
+                if (p.fadeAfterMs) {
+                    if (now - p.bornAt > p.fadeAfterMs) {
+                        p.alpha -= p.decay * 2.4;
+                    }
+                } else {
+                    p.alpha -= p.decay;
+                }
 
-        scoreValEl.classList.remove('score-pop-anim');
-        if (scoreBoxEl) scoreBoxEl.classList.remove('celebrate-glow');
-        void scoreValEl.offsetWidth;
+                if (p.alpha <= 0 || p.y > height + 40) {
+                    confettiParticles.splice(i, 1);
+                    continue;
+                }
 
-        const firePopAndConfetti = () => {
-            scoreValEl.innerText = finalScore;
-            scoreValEl.classList.add('score-pop-anim');
-            if (scoreBoxEl) scoreBoxEl.classList.add('celebrate-glow');
-            playSubtlePopSound();
-            launchConfettiFromElement(scoreValEl);
-        };
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
 
-        if (instantPop || finalScore <= 0) {
-            firePopAndConfetti();
-            return;
-        }
+                if (p.shape === 'mahjong_tile') {
+                    const tileW = p.size * 0.76;
+                    const tileH = p.size;
+                    ctx.fillStyle = '#084413';
+                    drawRoundedRectPath(ctx, -tileW / 2 + 1.5, -tileH / 2 + 2, tileW, tileH, 3.5);
+                    ctx.fill();
 
-        const duration = 320;
-        const startTime = performance.now();
+                    ctx.fillStyle = '#FFFFFF';
+                    drawRoundedRectPath(ctx, -tileW / 2, -tileH / 2, tileW, tileH, 3.5);
+                    ctx.fill();
 
-        function stepCount(now) {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            const currentVal = Math.round(eased * finalScore);
-            scoreValEl.innerText = currentVal;
+                    ctx.strokeStyle = '#cbd5e0';
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
 
-            if (progress < 1) {
-                scoreCounterFrame = requestAnimationFrame(stepCount);
+                    if (p.tileImg && p.tileImg.complete && p.tileImg.naturalWidth > 0) {
+                        ctx.drawImage(p.tileImg, -tileW * 0.4, -tileH * 0.4, tileW * 0.8, tileH * 0.8);
+                    }
+                } else if (p.shape === 'confetti_rect') {
+                    const w = p.size * 1.15;
+                    const h = p.size * 0.55;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-w / 2, -h / 2, w, h);
+                    if (p.color === '#FFFFFF') {
+                        ctx.strokeStyle = 'rgba(8, 68, 19, 0.25)';
+                        ctx.lineWidth = 0.6;
+                        ctx.strokeRect(-w / 2, -h / 2, w, h);
+                    }
+                } else if (p.shape === 'circle') {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, p.size * 0.48, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (p.shape === 'ribbon') {
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size * 0.7, -p.size * 0.25, p.size * 1.4, p.size * 0.5);
+                } else {
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size * 0.45, -p.size * 0.45, p.size * 0.9, p.size * 0.9);
+                }
+                ctx.restore();
+            }
+
+            if (confettiParticles.length > 0) {
+                confettiAnimFrame = requestAnimationFrame(renderConfettiLoop);
             } else {
+                confettiAnimFrame = null;
+                ctx.clearRect(0, 0, width, height);
+            }
+        }
+
+        function triggerScoreCelebration(finalScore, instantPop = false) {
+            const scoreValEl = document.getElementById('finalScoreVal');
+            const scoreBoxEl = document.getElementById('finalScoreBox');
+            if (!scoreValEl) return;
+
+            if (scoreCounterFrame) {
+                cancelAnimationFrame(scoreCounterFrame);
                 scoreCounterFrame = null;
+            }
+
+            scoreValEl.classList.remove('score-pop-anim');
+            if (scoreBoxEl) scoreBoxEl.classList.remove('celebrate-glow');
+            void scoreValEl.offsetWidth;
+
+            const firePopAndConfetti = () => {
+                scoreValEl.innerText = finalScore;
+                scoreValEl.classList.add('score-pop-anim');
+                if (scoreBoxEl) scoreBoxEl.classList.add('celebrate-glow');
+                playSubtlePopSound();
+                launchConfettiFromElement(scoreValEl);
+            };
+
+            if (instantPop || finalScore <= 0) {
                 firePopAndConfetti();
-            }
-        }
-
-        scoreCounterFrame = requestAnimationFrame(stepCount);
-    }
-
-    // 3 & 5. Animasi Count-Up Juara 1 + Suara Slot/Coin Tally (tick-tick-tick + ding!)
-    function startChampionCountUp(targetScore) {
-        const scoreEl = document.getElementById('champion-score-val');
-        if (!scoreEl) return;
-
-        if (championCountFrame) {
-            cancelAnimationFrame(championCountFrame);
-            championCountFrame = null;
-        }
-
-        const formatSigned = (val) => (val > 0 ? '+' + val : String(val));
-
-        if (targetScore === 0) {
-            scoreEl.innerText = '0';
-            playTallyDingSound();
-            return;
-        }
-
-        const duration = 850;
-        const startTime = performance.now();
-        let lastTickTime = 0;
-
-        function stepChampion(now) {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            const currentVal = Math.round(eased * targetScore);
-
-            scoreEl.innerText = formatSigned(currentVal);
-
-            // Bunyi tick-tick-tick cepat setiap ~55ms selama berhitung
-            if (progress < 1 && now - lastTickTime >= 55) {
-                playTallyTickSound(progress);
-                lastTickTime = now;
+                return;
             }
 
-            if (progress < 1) {
-                championCountFrame = requestAnimationFrame(stepChampion);
-            } else {
+            const duration = 320;
+            const startTime = performance.now();
+
+            function stepCount(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const currentVal = Math.round(eased * finalScore);
+                scoreValEl.innerText = currentVal;
+
+                if (progress < 1) {
+                    scoreCounterFrame = requestAnimationFrame(stepCount);
+                } else {
+                    scoreCounterFrame = null;
+                    firePopAndConfetti();
+                }
+            }
+
+            scoreCounterFrame = requestAnimationFrame(stepCount);
+        }
+
+        function startChampionCountUp(targetScore) {
+            const scoreEl = document.getElementById('champion-score-val');
+            if (!scoreEl) return;
+
+            if (championCountFrame) {
+                cancelAnimationFrame(championCountFrame);
                 championCountFrame = null;
-                scoreEl.innerText = formatSigned(targetScore);
-                scoreEl.classList.remove('score-pop-anim');
-                void scoreEl.offsetWidth;
-                scoreEl.classList.add('score-pop-anim');
-                playTallyDingSound();
             }
+
+            const formatSigned = (val) => (val > 0 ? '+' + val : String(val));
+
+            if (targetScore === 0) {
+                scoreEl.innerText = '0';
+                playTallyDingSound();
+                return;
+            }
+
+            const duration = 850;
+            const startTime = performance.now();
+            let lastTickTime = 0;
+
+            function stepChampion(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const currentVal = Math.round(eased * targetScore);
+
+                scoreEl.innerText = formatSigned(currentVal);
+
+                if (progress < 1 && now - lastTickTime >= 55) {
+                    playTallyTickSound(progress);
+                    lastTickTime = now;
+                }
+
+                if (progress < 1) {
+                    championCountFrame = requestAnimationFrame(stepChampion);
+                } else {
+                    championCountFrame = null;
+                    scoreEl.innerText = formatSigned(targetScore);
+                    scoreEl.classList.remove('score-pop-anim');
+                    void scoreEl.offsetWidth;
+                    scoreEl.classList.add('score-pop-anim');
+                    playTallyDingSound();
+                }
+            }
+
+            championCountFrame = requestAnimationFrame(stepChampion);
         }
 
-        championCountFrame = requestAnimationFrame(stepChampion);
-    }
-
-    function replayFinalCelebration() {
-        triggerHaptic(35);
-        showFinalScreen(true);
-    }
+        function replayFinalCelebration() {
+            triggerHaptic(35);
+            showFinalScreen(true);
+        }
 
         // ==========================================
-        // 1. STATE MAIN BOARD APP
+        // 1. STATE MAIN BOARD APP & ONLINE ROOM
         // ==========================================
         let players = [];
         let roundHistory = [];
         let currentRound = 1;
         let startedAt = null;
         let finishedAt = null;
+
+        // Online Room State
+        let roomCode = null;
+        let isHost = true;
 
         const WINDS = [
             { char: '東', name: 'Timur' },
@@ -1383,9 +1603,13 @@
             { char: '北', name: 'Utara' }
         ];
 
-        // Seat layout (counter-clockwise 2x2 grid): P1 top-left, P4 top-right, P2 bottom-left, P3 bottom-right
+        const TV_SEAT_ORDER = [0, 1, 2, 3];
         const SEAT_ORDER = [0, 3, 1, 2];
         const MIN_WIN_POINTS = 5;
+
+        function canEditGame() {
+            return !roomCode || isHost;
+        }
 
         function getDealerRotations() {
             return roundHistory.filter(r => r.dealerRotated).length;
@@ -1407,18 +1631,34 @@
             return `${WINDS[idx].char} ${WINDS[idx].name}`;
         }
 
-        // Temporary Record Form State
         let selectedWinnerIndex = null;
-        let selectedWinType = null; // 'cumo' | 'buangan'
+        let selectedWinType = null;
         let selectedDiscarderIndex = null;
 
-        // --- PERSISTENCE ---
         const STORAGE_KEY = 'skor-mahjong-state';
 
-        function saveState() {
+        function saveState(pushRemote = true) {
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify({ players, roundHistory, currentRound, startedAt, finishedAt }));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    players,
+                    roundHistory,
+                    currentRound,
+                    startedAt,
+                    finishedAt,
+                    roomCode,
+                    isHost
+                }));
             } catch (err) {}
+
+            if (pushRemote && roomCode && isHost && window.fbRoomService) {
+                window.fbRoomService.pushState(roomCode, {
+                    players,
+                    roundHistory,
+                    currentRound,
+                    startedAt,
+                    finishedAt
+                });
+            }
         }
 
         function clearState() {
@@ -1430,16 +1670,271 @@
         function loadState() {
             try {
                 const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-                if (data && Array.isArray(data.players) && data.players.length === 4) {
-                    players = data.players;
-                    roundHistory = Array.isArray(data.roundHistory) ? data.roundHistory : [];
-                    currentRound = Number.isInteger(data.currentRound) ? data.currentRound : roundHistory.length + 1;
-                    startedAt = data.startedAt || Date.now();
-                    finishedAt = data.finishedAt || null;
-                    return true;
+                if (data) {
+                    roomCode = data.roomCode || null;
+                    isHost = typeof data.isHost === 'boolean' ? data.isHost : true;
+                    if (Array.isArray(data.players) && data.players.length === 4) {
+                        players = data.players;
+                        roundHistory = Array.isArray(data.roundHistory) ? data.roundHistory : [];
+                        currentRound = Number.isInteger(data.currentRound) ? data.currentRound : roundHistory.length + 1;
+                        startedAt = data.startedAt || Date.now();
+                        finishedAt = data.finishedAt || null;
+                        return true;
+                    }
                 }
             } catch (err) {}
             return false;
+        }
+
+        function updateRoomBadgeUI(connected) {
+            const badge = document.getElementById('room-badge');
+            if (!badge) return;
+
+            if (!roomCode) {
+                badge.classList.add('hidden');
+                return;
+            }
+
+            badge.classList.remove('hidden');
+            const codeEl = document.getElementById('header-room-code');
+            const dotEl = document.getElementById('room-status-dot');
+            const roleEl = document.getElementById('header-room-role');
+
+            if (codeEl) codeEl.innerText = roomCode;
+            if (roleEl) roleEl.innerText = isHost ? 'HOST' : 'LIVE';
+
+            const isOnline = typeof connected === 'boolean'
+                ? connected
+                : (window.fbRoomService ? window.fbRoomService.isConnected() : true);
+
+            if (dotEl) {
+                dotEl.className = isOnline
+                    ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0'
+                    : 'w-2 h-2 rounded-full bg-amber-400 shrink-0';
+            }
+        }
+        window.updateRoomBadgeUI = updateRoomBadgeUI;
+
+        function copyRoomCode() {
+            if (!roomCode) return;
+            triggerHaptic(25);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(roomCode).then(() => {
+                    showToast(`Kode Room ${roomCode} disalin!`);
+                }).catch(() => {
+                    showToast(`Kode Room: ${roomCode}`);
+                });
+            } else {
+                showToast(`Kode Room: ${roomCode}`);
+            }
+        }
+
+        function updateControlPermissionsUI() {
+            const editable = canEditGame();
+            const hostControls = document.getElementById('host-controls-panel');
+            const viewerBanner = document.getElementById('viewer-mode-banner');
+            const viewerRoomCode = document.getElementById('viewer-room-code-label');
+
+            if (hostControls) hostControls.classList.toggle('hidden', !editable);
+            if (viewerBanner) viewerBanner.classList.toggle('hidden', editable);
+            if (viewerRoomCode && roomCode) viewerRoomCode.innerText = roomCode;
+
+            updateRoomBadgeUI();
+        }
+
+        function applyRemoteRoomData(data) {
+            if (!data || !Array.isArray(data.players) || data.players.length !== 4) return;
+
+            const wasFinished = Boolean(finishedAt);
+            players = data.players;
+            roundHistory = Array.isArray(data.roundHistory)
+                ? data.roundHistory
+                : (data.roundHistory ? Object.values(data.roundHistory) : []);
+            currentRound = Number.isInteger(data.currentRound) ? data.currentRound : roundHistory.length + 1;
+            startedAt = data.startedAt || Date.now();
+            finishedAt = data.finishedAt || null;
+
+            saveState(false);
+
+            if (finishedAt) {
+                showFinalScreen(!wasFinished);
+            } else {
+                document.getElementById('screen-final').classList.add('hidden');
+                showDashboard();
+            }
+        }
+
+        function attachOnlineRoomListener() {
+            if (!roomCode || !window.fbRoomService) return;
+            window.fbRoomService.subscribeRoom(roomCode, (data) => {
+                // Jika user adalah tamu/TV (atau ada sinkronisasi dari luar), perbarui UI
+                if (!isHost) {
+                    applyRemoteRoomData(data);
+                }
+            });
+        }
+
+        async function createOnlineRoom() {
+            triggerHaptic(40);
+            if (!window.fbRoomService) {
+                showToast('Layanan Firebase sedang dimuat, coba sesaat lagi.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-create-room');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Membuat...</span>';
+            }
+
+            try {
+                const p1 = document.getElementById('p1-input').value.trim() || 'Pemain 1';
+                const p2 = document.getElementById('p2-input').value.trim() || 'Pemain 2';
+                const p3 = document.getElementById('p3-input').value.trim() || 'Pemain 3';
+                const p4 = document.getElementById('p4-input').value.trim() || 'Pemain 4';
+
+                players = [
+                    { id: 0, name: p1, score: 0 },
+                    { id: 1, name: p2, score: 0 },
+                    { id: 2, name: p3, score: 0 },
+                    { id: 3, name: p4, score: 0 }
+                ];
+                roundHistory = [];
+                currentRound = 1;
+                startedAt = Date.now();
+                finishedAt = null;
+
+                const newCode = await window.fbRoomService.generateUniqueCode();
+                roomCode = newCode;
+                isHost = true;
+
+                await window.fbRoomService.createRoom(roomCode, {
+                    players,
+                    roundHistory,
+                    currentRound,
+                    startedAt,
+                    finishedAt
+                });
+
+                saveState(false);
+                attachOnlineRoomListener();
+                showDashboard();
+                showToast(`Room ${roomCode} siap! Bagikan ke TV / Pemain.`);
+            } catch (err) {
+                console.error(err);
+                roomCode = null;
+                showToast('Gagal membuat Room Online. Cek koneksi internet.');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
+            }
+        }
+
+        function openJoinRoomModal() {
+            triggerHaptic(25);
+            const input = document.getElementById('join-room-input');
+            if (input) input.value = '';
+            hideJoinRoomError();
+            document.getElementById('modal-join-room').classList.remove('hidden');
+            if (input) setTimeout(() => input.focus(), 50);
+        }
+
+        function closeJoinRoomModal() {
+            triggerHaptic(20);
+            document.getElementById('modal-join-room').classList.add('hidden');
+        }
+
+        function hideJoinRoomError() {
+            const el = document.getElementById('join-room-error');
+            if (el) el.classList.add('hidden');
+        }
+
+        function showJoinRoomError(msg) {
+            const el = document.getElementById('join-room-error');
+            if (el) {
+                el.querySelector('span').innerText = msg;
+                el.classList.remove('hidden');
+            }
+        }
+
+        async function submitJoinRoom(prefilledCode = null) {
+            triggerHaptic(35);
+            const input = document.getElementById('join-room-input');
+            const code = (prefilledCode || (input ? input.value : '')).trim();
+
+            if (!/^\d{6}$/.test(code)) {
+                showJoinRoomError('Masukkan 6 digit angka kode Room.');
+                return;
+            }
+
+            if (!window.fbRoomService) {
+                showJoinRoomError('Koneksi Firebase belum siap, coba lagi.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-join');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Mencari...</span>';
+            }
+
+            try {
+                const roomData = await window.fbRoomService.checkRoomExists(code);
+                if (!roomData || !Array.isArray(roomData.players)) {
+                    showJoinRoomError(`Room ${code} tidak ditemukan.`);
+                    return;
+                }
+
+                roomCode = code;
+                isHost = false;
+                closeJoinRoomModal();
+                applyRemoteRoomData(roomData);
+                attachOnlineRoomListener();
+                showToast(`Terhubung ke Room ${code}`);
+            } catch (err) {
+                console.error(err);
+                showJoinRoomError('Gagal terhubung ke server. Cek internet Anda.');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
+            }
+        }
+
+        function takeOverHost() {
+            if (!roomCode) return;
+            triggerHaptic(35);
+            isHost = true;
+            saveState(true);
+            showDashboard();
+            showToast(`Anda sekarang menjadi HOST Room ${roomCode}`);
+        }
+
+        function leaveOnlineRoom() {
+            triggerHaptic(30);
+            if (window.fbRoomService) {
+                window.fbRoomService.unsubscribeRoom();
+            }
+            roomCode = null;
+            isHost = true;
+            players = [];
+            roundHistory = [];
+            currentRound = 1;
+            startedAt = null;
+            finishedAt = null;
+            clearState();
+
+            updateRoomBadgeUI();
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-final').classList.add('hidden');
+            document.getElementById('round-counter-badge').classList.add('hidden');
+            document.getElementById('screen-setup').classList.remove('hidden');
+            showToast('Keluar dari Room Online.');
         }
 
         function showDashboard() {
@@ -1447,12 +1942,16 @@
             document.getElementById('screen-dashboard').classList.remove('hidden');
             document.getElementById('round-counter-badge').classList.remove('hidden');
 
+            updateControlPermissionsUI();
             renderScoreboard();
             renderHistory();
         }
 
-        window.onload = function() {
+        function initAppOnLoad() {
             preloadMahjongConfettiImages();
+            const params = new URLSearchParams(window.location.search);
+            const urlRoom = params.get('room');
+
             if (loadState()) {
                 players.forEach((player, idx) => {
                     const input = document.getElementById(`p${idx + 1}-input`);
@@ -1463,12 +1962,47 @@
                 } else {
                     showDashboard();
                 }
+                if (roomCode && window.fbRoomService) {
+                    attachOnlineRoomListener();
+                }
+            } else if (urlRoom && /^\d{6}$/.test(urlRoom) && window.fbRoomService) {
+                submitJoinRoom(urlRoom);
             }
-        };
+        }
+
+        window.addEventListener('load', initAppOnLoad);
+        window.addEventListener('fb-ready', () => {
+            if (roomCode) {
+                attachOnlineRoomListener();
+            } else {
+                const params = new URLSearchParams(window.location.search);
+                const urlRoom = params.get('room');
+                if (urlRoom && /^\d{6}$/.test(urlRoom) && players.length === 0) {
+                    submitJoinRoom(urlRoom);
+                }
+            }
+        });
+
+        // Sinkronisasi antar-tab lokal jika bermain mode offline
+        window.addEventListener('storage', function(e) {
+            if (e.key === STORAGE_KEY && !roomCode && loadState()) {
+                if (finishedAt) {
+                    showFinalScreen(false);
+                } else if (players.length === 4) {
+                    showDashboard();
+                }
+            }
+        });
 
         function startGame(e) {
             e.preventDefault();
             triggerHaptic(40);
+            if (window.fbRoomService) {
+                window.fbRoomService.unsubscribeRoom();
+            }
+            roomCode = null;
+            isHost = true;
+
             const p1 = document.getElementById('p1-input').value.trim() || 'Pemain 1';
             const p2 = document.getElementById('p2-input').value.trim() || 'Pemain 2';
             const p3 = document.getElementById('p3-input').value.trim() || 'Pemain 3';
@@ -1486,7 +2020,7 @@
             startedAt = Date.now();
             finishedAt = null;
 
-            saveState();
+            saveState(false);
             showDashboard();
         }
 
@@ -1495,42 +2029,112 @@
             const roundWind = WINDS[getRoundWindIndex()];
             document.getElementById('round-wind-char').innerText = roundWind.char;
             document.getElementById('round-wind-name').innerText = roundWind.name;
+
+            const dealerIdx = getDealerIndex();
+            const dealerEl = document.getElementById('current-dealer-name');
+            if (dealerEl && players[dealerIdx]) {
+                dealerEl.innerText = players[dealerIdx].name;
+            }
+
             const container = document.getElementById('scoreboard-grid');
             container.innerHTML = '';
 
             const maxScore = Math.max(...players.map(p => p.score));
             const hasLeader = players.some(p => p.score !== 0) && players.filter(p => p.score === maxScore).length === 1;
+            const orderList = IS_TV_DISPLAY ? TV_SEAT_ORDER : SEAT_ORDER;
+            const editable = canEditGame();
 
-            SEAT_ORDER.forEach((idx) => {
+            orderList.forEach((idx) => {
                 const player = players[idx];
                 const isLeader = hasLeader && player.score === maxScore;
                 const seatWind = getSeatWindIndex(idx);
-                const windBadge = seatWind === 0
-                    ? `<span class="inline-flex items-center space-x-1 bg-mjdanger text-white rounded-lg px-1.5 py-0.5 shadow-sm ring-2 ring-red-200"><span class="text-base font-black leading-none">${WINDS[0].char}</span><span class="text-[9px] font-black uppercase tracking-wider">Bandar</span></span>`
-                    : `<span class="inline-flex items-center justify-center border border-mjgreen/30 text-mjgreen/70 rounded-lg w-7 h-6 text-sm font-bold leading-none">${WINDS[seatWind].char}</span>`;
+                const isDealer = seatWind === 0;
 
-                const cardHtml = `
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border ${isLeader ? 'border-mjgold border-2 bg-gradient-to-b from-amber-50/30 to-white' : (seatWind === 0 ? 'border-mjdanger/40 border-2' : 'border-mjgreen/15')} relative transition-all duration-300">
-                        ${isLeader ? '<span class="absolute -top-2.5 right-3 bg-mjgold text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm"><i class="fa-solid fa-crown mr-1"></i>Memimpin</span>' : ''}
-                        
-                        <div class="flex items-center justify-between gap-2 mb-1">
-                            <button type="button" onclick="triggerHaptic(20); openRenameModal(${idx})" title="Ubah nama" class="text-xs font-semibold text-mjgreen/70 uppercase tracking-wide truncate text-left hover:text-mjgreen">
-                                ${idx === 0 ? '<span class="text-mjdanger" title="East Origin">▲</span> ' : ''}${escapeHtml(player.name)}
-                            </button>
-                            ${windBadge}
-                        </div>
+                if (IS_TV_DISPLAY) {
+                    const windBadge = isDealer
+                        ? `<div class="w-full bg-mjdanger text-white rounded-2xl py-2.5 px-3 shadow-sm flex items-center justify-center space-x-2.5">
+                               <span class="text-2xl lg:text-3xl xl:text-4xl font-black leading-none">${WINDS[0].char}</span>
+                               <div class="text-left leading-tight">
+                                   <span class="block text-xs lg:text-sm xl:text-base font-black uppercase tracking-wider">BANDAR</span>
+                                   <span class="block text-[10px] lg:text-xs font-semibold text-white/90">Angin Duduk Timur</span>
+                               </div>
+                           </div>`
+                        : `<div class="w-full bg-mjbg border border-mjgreen/20 text-mjgreen rounded-2xl py-2.5 px-3 flex items-center justify-center space-x-2.5">
+                               <span class="text-2xl lg:text-3xl xl:text-4xl font-black leading-none">${WINDS[seatWind].char}</span>
+                               <div class="text-left leading-tight">
+                                   <span class="block text-xs lg:text-sm xl:text-base font-extrabold uppercase tracking-wider">${WINDS[seatWind].name}</span>
+                                   <span class="block text-[10px] lg:text-xs font-semibold text-mjgreen/65">Angin Duduk</span>
+                               </div>
+                           </div>`;
 
-                        <div class="text-3xl md:text-4xl font-black ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'} tracking-tight my-1">
-                            ${player.score > 0 ? '+' + player.score : player.score}
+                    const cardBorderClass = isDealer
+                        ? 'border-mjdanger border-4 ring-4 ring-red-100'
+                        : (isLeader ? 'border-mjgold border-4 bg-gradient-to-b from-amber-50/40 to-white' : 'border-mjgreen/20 border-2');
+
+                    const nameEl = editable
+                        ? `<button type="button" onclick="triggerHaptic(20); openRenameModal(${idx})" title="Ketuk untuk ubah nama" class="w-full text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black text-mjgreen uppercase tracking-wide truncate text-center hover:text-mjaccent transition">
+                               ${idx === 0 ? '<span class="text-mjdanger text-lg xl:text-2xl align-middle" title="East Origin">▲</span> ' : ''}${escapeHtml(player.name)}
+                           </button>`
+                        : `<div class="w-full text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black text-mjgreen uppercase tracking-wide truncate text-center">
+                               ${idx === 0 ? '<span class="text-mjdanger text-lg xl:text-2xl align-middle" title="East Origin">▲</span> ' : ''}${escapeHtml(player.name)}
+                           </div>`;
+
+                    container.innerHTML += `
+                        <div class="bg-white rounded-3xl p-5 lg:p-6 xl:p-8 shadow-md ${cardBorderClass} relative flex flex-col justify-between min-h-[245px] lg:min-h-[290px] xl:min-h-[340px] transition-all duration-300">
+                            ${isLeader ? '<span class="absolute -top-3.5 right-4 bg-mjgold text-white text-xs lg:text-sm font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow"><i class="fa-solid fa-crown mr-1"></i>Memimpin</span>' : ''}
+                            <div class="text-center border-b border-mjbg pb-3">
+                                ${nameEl}
+                            </div>
+                            <div class="my-4 text-center flex-grow flex items-center justify-center">
+                                <div class="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'} tracking-tight leading-none">
+                                    ${player.score > 0 ? '+' + player.score : player.score}
+                                </div>
+                            </div>
+                            <div class="pt-1">
+                                ${windBadge}
+                            </div>
                         </div>
-                    </div>
-                `;
-                container.innerHTML += cardHtml;
+                    `;
+                } else {
+                    const windBadge = isDealer
+                        ? `<span class="inline-flex items-center space-x-1 bg-mjdanger text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"><span>${WINDS[0].char}</span><span>BANDAR</span></span>`
+                        : `<span class="inline-flex items-center space-x-1 bg-mjbg border border-mjgreen/20 text-mjgreen text-[10px] font-bold px-2 py-0.5 rounded-full"><span>${WINDS[seatWind].char}</span><span>${WINDS[seatWind].name}</span></span>`;
+
+                    const cardBorderClass = isDealer
+                        ? 'border-mjdanger border-2 ring-2 ring-red-100'
+                        : (isLeader ? 'border-mjgold border-2' : 'border-mjgreen/15 border');
+
+                    const nameEl = editable
+                        ? `<button type="button" onclick="triggerHaptic(20); openRenameModal(${idx})" title="Ketuk untuk ubah nama" class="w-full text-sm font-extrabold text-mjgreen uppercase tracking-wide truncate text-center hover:text-mjaccent transition">
+                               ${idx === 0 ? '<span class="text-mjdanger text-xs" title="East Origin">▲</span> ' : ''}${escapeHtml(player.name)}
+                           </button>`
+                        : `<div class="w-full text-sm font-extrabold text-mjgreen uppercase tracking-wide truncate text-center">
+                               ${idx === 0 ? '<span class="text-mjdanger text-xs" title="East Origin">▲</span> ' : ''}${escapeHtml(player.name)}
+                           </div>`;
+
+                    container.innerHTML += `
+                        <div class="bg-white rounded-2xl p-3.5 shadow-sm ${cardBorderClass} relative flex flex-col justify-between transition-all duration-300">
+                            ${isLeader ? '<span class="absolute -top-2.5 right-2.5 bg-mjgold text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm"><i class="fa-solid fa-crown mr-0.5"></i>Memimpin</span>' : ''}
+                            <div class="text-center border-b border-mjbg pb-1.5">
+                                ${nameEl}
+                            </div>
+                            <div class="my-2.5 text-center">
+                                <div class="text-3xl sm:text-4xl font-black ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'} tracking-tight">
+                                    ${player.score > 0 ? '+' + player.score : player.score}
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                ${windBadge}
+                            </div>
+                        </div>
+                    `;
+                }
             });
         }
 
         // --- RECORD SCORE MODAL STEPS ---
         function openRecordModal() {
+            if (!canEditGame()) return;
             triggerHaptic(30);
             selectedWinnerIndex = null;
             selectedWinType = null;
@@ -1596,21 +2200,14 @@
             if (type === 'buangan') {
                 const discarderGrid = document.getElementById('discarder-selection-grid');
                 discarderGrid.innerHTML = '';
-                SEAT_ORDER.forEach((idx) => {
+                TV_SEAT_ORDER.forEach((idx) => {
                     const player = players[idx];
-                    if (idx === selectedWinnerIndex) {
-                        discarderGrid.innerHTML += `
-                            <div class="p-2.5 rounded-xl border border-dashed border-gray-200 bg-gray-50 text-gray-300 font-semibold text-xs text-center truncate">
-                                ${escapeHtml(player.name)} <span class="text-[9px] uppercase">(Pemenang)</span>
-                            </div>
-                        `;
-                    } else {
-                        discarderGrid.innerHTML += `
-                            <button id="discarder-btn-${idx}" onclick="triggerHaptic(20); selectDiscarder(${idx})" class="discarder-btn p-2.5 rounded-xl border border-mjgreen/30 hover:border-mjgreen bg-white text-mjgreen font-semibold text-xs transition truncate">
-                                ${escapeHtml(player.name)}
-                            </button>
-                        `;
-                    }
+                    if (idx === selectedWinnerIndex) return;
+                    discarderGrid.innerHTML += `
+                        <button id="discarder-btn-${idx}" onclick="triggerHaptic(20); selectDiscarder(${idx})" class="discarder-btn p-2.5 rounded-xl border border-mjgreen/30 hover:border-mjgreen bg-white text-mjgreen font-semibold text-xs transition truncate">
+                            ${escapeHtml(player.name)}
+                        </button>
+                    `;
                 });
                 document.getElementById('discard-selector-container').classList.remove('hidden');
             } else {
@@ -1683,6 +2280,7 @@
         }
 
         function submitScore() {
+            if (!canEditGame()) return;
             triggerHaptic(40);
             const pointsInput = document.getElementById('win-points-input');
             const points = parseInt(pointsInput.value);
@@ -1739,7 +2337,7 @@
             });
 
             currentRound++;
-            saveState();
+            saveState(true);
 
             renderScoreboard();
             renderHistory();
@@ -1757,53 +2355,53 @@
         const SVG_MASTER = "https://raw.githubusercontent.com/budijoe/skor-mahjong/main/";
 
         const flowerTiles = [
-        	{ id: 'f_red_1', name: '1 Merah', code: 'red1', img: SVG_MASTER + 'svg/35-spring.svg' },
-        	{ id: 'f_red_2', name: '2 Merah', code: 'red2', img: SVG_MASTER + 'svg/36-summer.svg' },
-        	{ id: 'f_red_3', name: '3 Merah', code: 'red3', img: SVG_MASTER + 'svg/37-autumn.svg' },
-        	{ id: 'f_red_4', name: '4 Merah', code: 'red4', img: SVG_MASTER + 'svg/38-winter.svg' },
-        	{ id: 'f_black_1', name: '1 Hitam', code: 'black1', img: SVG_MASTER + 'svg/39-plum.svg' },
-        	{ id: 'f_black_2', name: '2 Hitam', code: 'black2', img: SVG_MASTER + 'svg/40-orchid.svg' },
-        	{ id: 'f_black_3', name: '3 Hitam', code: 'black3', img: SVG_MASTER + 'svg/41-chrysanthemum.svg' },
-        	{ id: 'f_black_4', name: '4 Hitam', code: 'black4', img: SVG_MASTER + 'svg/42-bamboo.svg' }
+            { id: 'f_red_1', name: '1 Merah', code: 'red1', img: SVG_MASTER + 'svg/35-spring.svg' },
+            { id: 'f_red_2', name: '2 Merah', code: 'red2', img: SVG_MASTER + 'svg/36-summer.svg' },
+            { id: 'f_red_3', name: '3 Merah', code: 'red3', img: SVG_MASTER + 'svg/37-autumn.svg' },
+            { id: 'f_red_4', name: '4 Merah', code: 'red4', img: SVG_MASTER + 'svg/38-winter.svg' },
+            { id: 'f_black_1', name: '1 Hitam', code: 'black1', img: SVG_MASTER + 'svg/39-plum.svg' },
+            { id: 'f_black_2', name: '2 Hitam', code: 'black2', img: SVG_MASTER + 'svg/40-orchid.svg' },
+            { id: 'f_black_3', name: '3 Hitam', code: 'black3', img: SVG_MASTER + 'svg/41-chrysanthemum.svg' },
+            { id: 'f_black_4', name: '4 Hitam', code: 'black4', img: SVG_MASTER + 'svg/42-bamboo.svg' }
         ];
 
         const standardTiles = [
-        	{ id: '1_wan', label: '1 Wan', type: 'wan', val: 1, img: SVG_MASTER + 'svg/08-characters-1.svg' },
-        	{ id: '2_wan', label: '2 Wan', type: 'wan', val: 2, img: SVG_MASTER + 'svg/09-characters-2.svg' },
-        	{ id: '3_wan', label: '3 Wan', type: 'wan', val: 3, img: SVG_MASTER + 'svg/10-characters-3.svg' },
-        	{ id: '4_wan', label: '4 Wan', type: 'wan', val: 4, img: SVG_MASTER + 'svg/11-characters-4.svg' },
-        	{ id: '5_wan', label: '5 Wan', type: 'wan', val: 5, img: SVG_MASTER + 'svg/12-characters-5.svg' },
-        	{ id: '6_wan', label: '6 Wan', type: 'wan', val: 6, img: SVG_MASTER + 'svg/13-characters-6.svg' },
-        	{ id: '7_wan', label: '7 Wan', type: 'wan', val: 7, img: SVG_MASTER + 'svg/14-characters-7.svg' },
-        	{ id: '8_wan', label: '8 Wan', type: 'wan', val: 8, img: SVG_MASTER + 'svg/15-characters-8.svg' },
-        	{ id: '9_wan', label: '9 Wan', type: 'wan', val: 9, img: SVG_MASTER + 'svg/16-characters-9.svg' },
-        	{ id: '1_sok', label: '1 Sok', type: 'sok', val: 1, img: SVG_MASTER + 'svg/26-bamboos-1.svg' },
-        	{ id: '2_sok', label: '2 Sok', type: 'sok', val: 2, img: SVG_MASTER + 'svg/27-bamboos-2.svg' },
-        	{ id: '3_sok', label: '3 Sok', type: 'sok', val: 3, img: SVG_MASTER + 'svg/28-bamboos-3.svg' },
-        	{ id: '4_sok', label: '4 Sok', type: 'sok', val: 4, img: SVG_MASTER + 'svg/29-bamboos-4.svg' },
-        	{ id: '5_sok', label: '5 Sok', type: 'sok', val: 5, img: SVG_MASTER + 'svg/30-bamboos-5.svg' },
-        	{ id: '6_sok', label: '6 Sok', type: 'sok', val: 6, img: SVG_MASTER + 'svg/31-bamboos-6.svg' },
-        	{ id: '7_sok', label: '7 Sok', type: 'sok', val: 7, img: SVG_MASTER + 'svg/32-bamboos-7.svg' },
-        	{ id: '8_sok', label: '8 Sok', type: 'sok', val: 8, img: SVG_MASTER + 'svg/33-bamboos-8.svg' },
-        	{ id: '9_sok', label: '9 Sok', type: 'sok', val: 9, img: SVG_MASTER + 'svg/34-bamboos-9.svg' },
-        	{ id: '1_tong', label: '1 Tong', type: 'tong', val: 1, img: SVG_MASTER + 'svg/17-circles-1-variant-4.svg' },
-        	{ id: '2_tong', label: '2 Tong', type: 'tong', val: 2, img: SVG_MASTER + 'svg/18-circles-2.svg' },
-        	{ id: '3_tong', label: '3 Tong', type: 'tong', val: 3, img: SVG_MASTER + 'svg/19-circles-3.svg' },
-        	{ id: '4_tong', label: '4 Tong', type: 'tong', val: 4, img: SVG_MASTER + 'svg/20-circles-4.svg' },
-        	{ id: '5_tong', label: '5 Tong', type: 'tong', val: 5, img: SVG_MASTER + 'svg/21-circles-5.svg' },
-        	{ id: '6_tong', label: '6 Tong', type: 'tong', val: 6, img: SVG_MASTER + 'svg/22-circles-6.svg' },
-        	{ id: '7_tong', label: '7 Tong', type: 'tong', val: 7, img: SVG_MASTER + 'svg/23-circles-7.svg' },
-        	{ id: '8_tong', label: '8 Tong', type: 'tong', val: 8, img: SVG_MASTER + 'svg/24-circles-8.svg' },
-        	{ id: '9_tong', label: '9 Tong', type: 'tong', val: 9, img: SVG_MASTER + 'svg/25-circles-9.svg' },
-        	{ id: 'cung', label: 'Cung (Red Dragon)', type: 'dragon', val: 'cung', img: SVG_MASTER + 'svg/03-red-dragon.svg' },
-        	{ id: 'fat', label: 'Fat (Green Dragon)', type: 'dragon', val: 'fat', img: SVG_MASTER + 'svg/02-green-dragon.svg' },
-        	{ id: 'pai', label: 'Pai (White Dragon)', type: 'dragon', val: 'pai', img: SVG_MASTER + 'svg/01-white-dragon.svg' },
-        	{ id: 'tung', label: 'Tung (East)', type: 'wind', val: 1, img: SVG_MASTER + 'svg/04-east-wind.svg' },
-        	{ id: 'nan', label: 'Nan (South)', type: 'wind', val: 2, img: SVG_MASTER + 'svg/05-south-wind.svg' },
-	       	{ id: 'si', label: 'Si (West)', type: 'wind', val: 3, img: SVG_MASTER + 'svg/06-west-wind.svg' },
-        	{ id: 'pei', label: 'Pei (North)', type: 'wind', val: 4, img: SVG_MASTER + 'svg/07-north-wind.svg' },
-        	{ id: 'kim', label: 'KIM / Joker', type: 'kim', val: 'kim', img: SVG_MASTER + 'svg/44-joker-clown.svg', span2: true }
-    	];
+            { id: '1_wan', label: '1 Wan', type: 'wan', val: 1, img: SVG_MASTER + 'svg/08-characters-1.svg' },
+            { id: '2_wan', label: '2 Wan', type: 'wan', val: 2, img: SVG_MASTER + 'svg/09-characters-2.svg' },
+            { id: '3_wan', label: '3 Wan', type: 'wan', val: 3, img: SVG_MASTER + 'svg/10-characters-3.svg' },
+            { id: '4_wan', label: '4 Wan', type: 'wan', val: 4, img: SVG_MASTER + 'svg/11-characters-4.svg' },
+            { id: '5_wan', label: '5 Wan', type: 'wan', val: 5, img: SVG_MASTER + 'svg/12-characters-5.svg' },
+            { id: '6_wan', label: '6 Wan', type: 'wan', val: 6, img: SVG_MASTER + 'svg/13-characters-6.svg' },
+            { id: '7_wan', label: '7 Wan', type: 'wan', val: 7, img: SVG_MASTER + 'svg/14-characters-7.svg' },
+            { id: '8_wan', label: '8 Wan', type: 'wan', val: 8, img: SVG_MASTER + 'svg/15-characters-8.svg' },
+            { id: '9_wan', label: '9 Wan', type: 'wan', val: 9, img: SVG_MASTER + 'svg/16-characters-9.svg' },
+            { id: '1_sok', label: '1 Sok', type: 'sok', val: 1, img: SVG_MASTER + 'svg/26-bamboos-1.svg' },
+            { id: '2_sok', label: '2 Sok', type: 'sok', val: 2, img: SVG_MASTER + 'svg/27-bamboos-2.svg' },
+            { id: '3_sok', label: '3 Sok', type: 'sok', val: 3, img: SVG_MASTER + 'svg/28-bamboos-3.svg' },
+            { id: '4_sok', label: '4 Sok', type: 'sok', val: 4, img: SVG_MASTER + 'svg/29-bamboos-4.svg' },
+            { id: '5_sok', label: '5 Sok', type: 'sok', val: 5, img: SVG_MASTER + 'svg/30-bamboos-5.svg' },
+            { id: '6_sok', label: '6 Sok', type: 'sok', val: 6, img: SVG_MASTER + 'svg/31-bamboos-6.svg' },
+            { id: '7_sok', label: '7 Sok', type: 'sok', val: 7, img: SVG_MASTER + 'svg/32-bamboos-7.svg' },
+            { id: '8_sok', label: '8 Sok', type: 'sok', val: 8, img: SVG_MASTER + 'svg/33-bamboos-8.svg' },
+            { id: '9_sok', label: '9 Sok', type: 'sok', val: 9, img: SVG_MASTER + 'svg/34-bamboos-9.svg' },
+            { id: '1_tong', label: '1 Tong', type: 'tong', val: 1, img: SVG_MASTER + 'svg/17-circles-1-variant-4.svg' },
+            { id: '2_tong', label: '2 Tong', type: 'tong', val: 2, img: SVG_MASTER + 'svg/18-circles-2.svg' },
+            { id: '3_tong', label: '3 Tong', type: 'tong', val: 3, img: SVG_MASTER + 'svg/19-circles-3.svg' },
+            { id: '4_tong', label: '4 Tong', type: 'tong', val: 4, img: SVG_MASTER + 'svg/20-circles-4.svg' },
+            { id: '5_tong', label: '5 Tong', type: 'tong', val: 5, img: SVG_MASTER + 'svg/21-circles-5.svg' },
+            { id: '6_tong', label: '6 Tong', type: 'tong', val: 6, img: SVG_MASTER + 'svg/22-circles-6.svg' },
+            { id: '7_tong', label: '7 Tong', type: 'tong', val: 7, img: SVG_MASTER + 'svg/23-circles-7.svg' },
+            { id: '8_tong', label: '8 Tong', type: 'tong', val: 8, img: SVG_MASTER + 'svg/24-circles-8.svg' },
+            { id: '9_tong', label: '9 Tong', type: 'tong', val: 9, img: SVG_MASTER + 'svg/25-circles-9.svg' },
+            { id: 'cung', label: 'Cung (Red Dragon)', type: 'dragon', val: 'cung', img: SVG_MASTER + 'svg/03-red-dragon.svg' },
+            { id: 'fat', label: 'Fat (Green Dragon)', type: 'dragon', val: 'fat', img: SVG_MASTER + 'svg/02-green-dragon.svg' },
+            { id: 'pai', label: 'Pai (White Dragon)', type: 'dragon', val: 'pai', img: SVG_MASTER + 'svg/01-white-dragon.svg' },
+            { id: 'tung', label: 'Tung (East)', type: 'wind', val: 1, img: SVG_MASTER + 'svg/04-east-wind.svg' },
+            { id: 'nan', label: 'Nan (South)', type: 'wind', val: 2, img: SVG_MASTER + 'svg/05-south-wind.svg' },
+            { id: 'si', label: 'Si (West)', type: 'wind', val: 3, img: SVG_MASTER + 'svg/06-west-wind.svg' },
+            { id: 'pei', label: 'Pei (North)', type: 'wind', val: 4, img: SVG_MASTER + 'svg/07-north-wind.svg' },
+            { id: 'kim', label: 'KIM / Joker', type: 'kim', val: 'kim', img: SVG_MASTER + 'svg/44-joker-clown.svg', span2: true }
+        ];
 
         const windNamesMap = {
             1: '東 (East) 1',
@@ -1839,10 +2437,10 @@
             const toast = document.getElementById('toastMsg');
             toast.innerText = msg;
             toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 2000);
+            setTimeout(() => { toast.classList.add('hidden'); }, 2200);
         }
+        window.showToast = showToast;
 
-        // --- OPEN SCORER FROM STEP 3 (BERSAPU & AMBIL DATA ANGIN TERBARU) ---
         function openScorerFromRecord() {
             triggerHaptic(30);
             scorerState = {
@@ -1920,7 +2518,6 @@
             }
         }
 
-        // --- SCORER PAGE 2: CARA MENANG ---
         function renderScorerPage2(content, footer) {
             const ways = [
                 { id: 'buangan', label: 'Buangan Orang', desc: 'Menang dari buangan pemain lain' },
@@ -1965,7 +2562,6 @@
             renderScorer();
         }
 
-        // --- SCORER PAGE 3: KARTU BUNGA ---
         function renderScorerPage3(content, footer) {
             const redFlowers = flowerTiles.filter(f => f.code.startsWith('red'));
             const blackFlowers = flowerTiles.filter(f => f.code.startsWith('black'));
@@ -2017,7 +2613,6 @@
             renderScorer();
         }
 
-        // --- SCORER PAGE 4: INPUT KARTU TANGAN ---
         function renderScorerPage4(content, footer) {
             if (!activeSlotTarget) {
                 activeSlotTarget = { mode: scorerState.handMode, groupIndex: 0, slotIndex: 0 };
@@ -2251,19 +2846,18 @@
             showToast('Semua slot kartu dibersihkan');
         }
 
-        // --- SCORER PAGE 5: KONDISI SPESIAL ---
         function renderScorerPage5(content, footer) {
-        	const specials = [
-            	{ id: 'none', label: 'Tidak Ada Kondisi Spesial', desc: 'Perhitungan standar' },
-            	{ id: 'pyongpi1', label: 'Pyong Pi Hitung 1', desc: 'Sisa joker, kartu apa pun yang diambil jadi kaki/pair (langsung dibuka setelah liu).<br>+5 Poin' },
-            	{ id: 'pyongpi4', label: 'Pyong Pi Hitung 4', desc: 'Dihitung sampai dengan putaran ke 4, di putaran 4 baru tambah poin, apabila dibatalkan sebelum putaran ke 4, tidak ditambahkan apapun.<br>+10 Poin' },
-            	{ id: 'pyongpi6', label: 'Pyong Pi Hitung 6', desc: 'Dihitung sampai dengan putaran ke 6, di putaran 6 baru tambah poin, apabila dibatalkan sebelum putaran ke 6, tidak ditambahkan apapun.<br>+30 Poin' },
-            	{ id: 'paochin', label: 'Pao Chin', desc: 'Di awal permainan setelah kartu dibagi, tinggal kurang dari 1 kartu sebelum Hu; harus diumumkan di awal permainan. Putaran pertama liu bisa Thi Hu. Apabila Thi Hu gagal, Pao Chin tetap berlaku.<br>+20 dengan KIM / +30 tanpa KIM' },
-            	{ id: 'sesampu', label: 'Se Sam Pu Tap (Thirteen Unconnected)', desc: 'Semua kartu tidak nyambung (tidak ada pair, minimal loncat 2 dalam suit yang sama). Tidak bisa dibuat (hanya dari awal bagi kartu), tidak boleh punya bunga, tidak boleh punya kim.<br>+40 Poin' },
-            	{ id: 'capsayauw', label: 'Cap Sa Yauw (Thirteen Orphans)', desc: '1 wan, 9 wan, 1 tong, 9 tong, 1 sok, 9 sok, tung, nan, si, pei, cung, fat, pat +1 antaranya.<br>+40 dengan KIM / +60 tanpa KIM' },
-            	{ id: 'thihu', label: 'Thi Hu (Blessing of Earth)', desc: 'Hu dari kartu buangan yang paling pertama (dari pemain pertama) diawali dengan pengumuman Pao Chin.<br>+40 dengan KIM / +60 tanpa KIM' },
-            	{ id: 'thianhu', label: 'Thian Hu (Blessing of Heaven)', desc: 'Setelah dibagi kartu, Bandar dengan 14 kartu langsung Hu.<br>+40 dengan KIM / +60 tanpa KIM' }
-        	];
+            const specials = [
+                { id: 'none', label: 'Tidak Ada Kondisi Spesial', desc: 'Perhitungan standar' },
+                { id: 'pyongpi1', label: 'Pyong Pi Hitung 1', desc: 'Sisa joker, kartu apa pun yang diambil jadi kaki/pair (langsung dibuka setelah liu).<br>+5 Poin' },
+                { id: 'pyongpi4', label: 'Pyong Pi Hitung 4', desc: 'Dihitung sampai dengan putaran ke 4, di putaran 4 baru tambah poin, apabila dibatalkan sebelum putaran ke 4, tidak ditambahkan apapun.<br>+10 Poin' },
+                { id: 'pyongpi6', label: 'Pyong Pi Hitung 6', desc: 'Dihitung sampai dengan putaran ke 6, di putaran 6 baru tambah poin, apabila dibatalkan sebelum putaran ke 6, tidak ditambahkan apapun.<br>+30 Poin' },
+                { id: 'paochin', label: 'Pao Chin', desc: 'Di awal permainan setelah kartu dibagi, tinggal kurang dari 1 kartu sebelum Hu; harus diumumkan di awal permainan. Putaran pertama liu bisa Thi Hu. Apabila Thi Hu gagal, Pao Chin tetap berlaku.<br>+20 dengan KIM / +30 tanpa KIM' },
+                { id: 'sesampu', label: 'Se Sam Pu Tap (Thirteen Unconnected)', desc: 'Semua kartu tidak nyambung (tidak ada pair, minimal loncat 2 dalam suit yang sama). Tidak bisa dibuat (hanya dari awal bagi kartu), tidak boleh punya bunga, tidak boleh punya kim.<br>+40 Poin' },
+                { id: 'capsayauw', label: 'Cap Sa Yauw (Thirteen Orphans)', desc: '1 wan, 9 wan, 1 tong, 9 tong, 1 sok, 9 sok, tung, nan, si, pei, cung, fat, pat +1 antaranya.<br>+40 dengan KIM / +60 tanpa KIM' },
+                { id: 'thihu', label: 'Thi Hu (Blessing of Earth)', desc: 'Hu dari kartu buangan yang paling pertama (dari pemain pertama) diawali dengan pengumuman Pao Chin.<br>+40 dengan KIM / +60 tanpa KIM' },
+                { id: 'thianhu', label: 'Thian Hu (Blessing of Heaven)', desc: 'Setelah dibagi kartu, Bandar dengan 14 kartu langsung Hu.<br>+40 dengan KIM / +60 tanpa KIM' }
+            ];
 
             let optionsHtml = specials.map(s => `
                 <div class="option-card bg-white border-2 ${scorerState.specialHand === s.id ? 'border-mjgreen bg-mjlight' : 'border-gray-200'} rounded-2xl p-3 mb-2 flex items-center cursor-pointer transition" onclick="triggerHaptic(20); selectSpecialHand('${s.id}')">
@@ -2298,7 +2892,6 @@
             renderScorer();
         }
 
-        // --- SCORER PAGE 6: HASIL PERHITUNGAN SCORE ---
         function renderScorerPage6(content, footer) {
             const evaluation = calculateScore();
 
@@ -2309,7 +2902,7 @@
                 </div>
             `).join('');
 
-let flowersVisualHtml = '';
+            let flowersVisualHtml = '';
             if (scorerState.selectedFlowers.length > 0) {
                 const sortedFlowers = flowerTiles.filter(fl => scorerState.selectedFlowers.includes(fl.id));
                 let flowerCardsHtml = sortedFlowers.map(fl => `
@@ -2355,9 +2948,9 @@ let flowersVisualHtml = '';
 
                 handSetsVisualHtml = `
                     <div class="flex items-baseline gap-2">
-  						<span class="text-[16px] font-bold text-mjgreen mb-1">🀅</span>
-  						<span class="text-[11px] font-bold text-mjgreen mb-1">Kartu Tangan Hu</span>
-					</div>
+                        <span class="text-[16px] font-bold text-mjgreen mb-1">🀅</span>
+                        <span class="text-[11px] font-bold text-mjgreen mb-1">Kartu Tangan Hu</span>
+                    </div>
                     <div class="flex flex-wrap gap-1.5">
                         ${groupsHtml}
                     </div>
@@ -2385,9 +2978,9 @@ let flowersVisualHtml = '';
 
                 handSetsVisualHtml = `
                     <div class="flex items-baseline gap-2">
-  						<span class="text-[16px] font-bold text-mjgreen mb-1">🀅</span>
-  						<span class="text-[11px] font-bold text-mjgreen mb-1">Kartu Tangan Hu</span>
-					</div>
+                        <span class="text-[16px] font-bold text-mjgreen mb-1">🀅</span>
+                        <span class="text-[11px] font-bold text-mjgreen mb-1">Kartu Tangan Hu</span>
+                    </div>
                     <div class="flex flex-wrap gap-1.5">
                         ${pairsHtml}
                     </div>
@@ -2845,7 +3438,6 @@ let flowersVisualHtml = '';
                 }
             }
 
-            // PEMERIKSAAN KARTU NAGA & ANGIN (PER SET & PAIR DENGAN DUKUNGAN KIM)
             let tripletTiles = [];
             let pairTargetTile = null;
 
@@ -2857,7 +3449,6 @@ let flowersVisualHtml = '';
                 pairTargetTile = getPairTargetTile(scorerState.standardMelds[4].tiles);
             }
 
-            // 1-3. Pung/Tris Naga Individual
             ['cung', 'fat', 'pai'].forEach(d => {
                 let hasTriplet = scorerState.handMode === 'standard'
                     ? tripletTiles.includes(d)
@@ -2871,7 +3462,6 @@ let flowersVisualHtml = '';
                 }
             });
 
-            // 4 & 5. Siau San Yen & Ta San Yen
             if (scorerState.handMode === 'standard') {
                 const dragons = ['cung', 'fat', 'pai'];
                 let dragonTripletCount = dragons.filter(d => tripletTiles.includes(d)).length;
@@ -2888,7 +3478,6 @@ let flowersVisualHtml = '';
                 }
             }
 
-            // 1 & 2. Pung/Tris Angin Duduk & Angin Meja
             const windMap = { 1: 'tung', 2: 'nan', 3: 'si', 4: 'pei' };
             let seatWindTile = windMap[scorerState.seatWind];
             let prevalentWindTile = windMap[scorerState.prevalentWind];
@@ -2911,7 +3500,6 @@ let flowersVisualHtml = '';
                 items.push({ title: 'Pung Angin Meja (Prevalent Wind)', pts: 1 });
             }
 
-            // 3 & 4. Siau Se Si & Ta Se Si
             if (scorerState.handMode === 'standard') {
                 const winds = ['tung', 'nan', 'si', 'pei'];
                 let windTripletCount = winds.filter(w => tripletTiles.includes(w)).length;
@@ -2940,7 +3528,6 @@ let flowersVisualHtml = '';
                 }
             }
 
-            // PEMERIKSAAN KONDISI SPESIAL
             if (scorerState.specialHand === 'pyongpi1') {
                 totalScore += 5;
                 items.push({ title: 'Pyong Pi Hitung 1', pts: 5 });
@@ -2978,6 +3565,7 @@ let flowersVisualHtml = '';
         // 3. MAIN GAME OTHER AUXILIARY FUNCTIONS
         // ==========================================
         function recordDraw() {
+            if (!canEditGame()) return;
             triggerHaptic(30);
             const roundWind = getRoundWindIndex();
             const dealerIdx = getDealerIndex();
@@ -2997,7 +3585,7 @@ let flowersVisualHtml = '';
             });
 
             currentRound++;
-            saveState();
+            saveState(true);
             renderScoreboard();
             renderHistory();
 
@@ -3018,6 +3606,7 @@ let flowersVisualHtml = '';
         }
 
         function openFinishModal() {
+            if (!canEditGame()) return;
             triggerHaptic(30);
             document.getElementById('modal-finish').classList.remove('hidden');
         }
@@ -3028,10 +3617,11 @@ let flowersVisualHtml = '';
         }
 
         function finishGame() {
+            if (!canEditGame()) return;
             triggerHaptic(40);
             closeFinishModal();
             finishedAt = Date.now();
-            saveState();
+            saveState(true);
             showFinalScreen(true);
             scrollToTop();
         }
@@ -3064,6 +3654,19 @@ let flowersVisualHtml = '';
             document.getElementById('screen-dashboard').classList.add('hidden');
             document.getElementById('round-counter-badge').classList.add('hidden');
             document.getElementById('screen-final').classList.remove('hidden');
+            updateRoomBadgeUI();
+
+            const finalResetBtn = document.getElementById('btn-final-new-game');
+            const finalLeaveBtn = document.getElementById('btn-final-leave-room');
+            if (finalResetBtn && finalLeaveBtn) {
+                if (roomCode && !isHost) {
+                    finalResetBtn.classList.add('hidden');
+                    finalLeaveBtn.classList.remove('hidden');
+                } else {
+                    finalResetBtn.classList.remove('hidden');
+                    finalLeaveBtn.classList.add('hidden');
+                }
+            }
 
             const endDate = new Date(finishedAt);
             document.getElementById('final-date').innerText = endDate.toLocaleDateString('id-ID', {
@@ -3083,19 +3686,18 @@ let flowersVisualHtml = '';
                 const rank = sorted.findIndex(p => p.score === player.score) + 1;
                 const isTop = rank === 1;
                 const isFirstCard = i === 0;
-                // Podium muncul bertahap dari peringkat terbawah (i=3 -> 0s) ke Juara 1 (i=0 -> 0.6s)
                 const staggerDelay = celebrate ? ((totalPlayers - 1 - i) * 0.2) : 0;
                 const formattedScore = player.score > 0 ? '+' + player.score : String(player.score);
 
                 return `
                     <div style="animation-delay: ${staggerDelay.toFixed(1)}s"
-                         class="flex items-center rounded-2xl p-3.5 shadow-sm border ${celebrate ? 'podium-reveal' : ''} ${isTop ? 'champion-card champion-shimmer border-mjgold border-2' : 'bg-white border-mjgreen/15'}">
+                         class="flex items-center rounded-2xl p-4 shadow-sm border ${celebrate ? 'podium-reveal' : ''} ${isTop ? 'champion-card champion-shimmer border-mjgold border-2' : 'bg-white border-mjgreen/15'}">
                         <div class="w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${medal[rank - 1]} shrink-0 shadow-sm">${rank}</div>
                         <div class="final-name flex-1 min-w-0 px-3 py-0.5 font-bold text-mjgreen text-lg leading-normal truncate flex items-center gap-1.5">
                             ${isTop ? '<span class="crown-badge text-xl leading-none">👑</span>' : ''}
                             <span class="truncate">${escapeHtml(player.name)}</span>
                         </div>
-                        <div ${isFirstCard ? 'id="champion-score-val"' : ''} class="text-3xl font-black tracking-tight ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'}">
+                        <div ${isFirstCard ? 'id="champion-score-val"' : ''} class="text-2xl sm:text-3xl font-black tracking-tight ${player.score < 0 ? 'text-mjdanger' : 'text-mjgreen'}">
                             ${celebrate && isFirstCard ? '0' : formattedScore}
                         </div>
                     </div>
@@ -3111,20 +3713,15 @@ let flowersVisualHtml = '';
             );
 
             if (celebrate) {
-                // Getaran kemenangan meriah
                 if ("vibrate" in navigator) {
                     try {
                         navigator.vibrate([80, 40, 80, 40, 250]);
                     } catch (e) {}
                 }
 
-                // 1. Hujan Konfeti & Tile Mahjong (3–4 detik)
                 launchMahjongConfettiRain();
-
-                // 4. Suara Mahjong Tile Clack + Chime
                 playMahjongClackAndChime();
 
-                // 3 & 5. Saat Juara 1 muncul di puncak podium (0.6s), mulai Count-Up + Slot/Coin Tally + Ding!
                 const championScore = sorted[0] ? sorted[0].score : 0;
                 const championRevealMs = (totalPlayers - 1) * 200;
                 championTallyTimer = setTimeout(() => {
@@ -3132,89 +3729,87 @@ let flowersVisualHtml = '';
                 }, championRevealMs);
             }
         }
-async function captureFinal() {
-    if (typeof html2canvas === 'undefined') {
-        return null;
-    }
-    const canvas = await html2canvas(document.getElementById('final-capture'), {
-        backgroundColor: '#F9F5F1',
-        scale: Math.max(2, window.devicePixelRatio || 1),
-        onclone: (doc) => {
-            // 1. Matikan animasi & kilau shimmer (::after) pada dokumen kloning
-            const fixStyle = doc.createElement('style');
-            fixStyle.textContent = `
-                .podium-reveal { opacity: 1 !important; transform: none !important; animation: none !important; }
-                .champion-shimmer::after { display: none !important; content: none !important; }
-            `;
-            doc.head.appendChild(fixStyle);
 
-            // 2. Gunakan layout table-cell agar kolom kiri, tengah, & kanan terkunci presisi
-            doc.querySelectorAll('#final-ranking > div').forEach(card => {
-                const badge = card.children[0];
-                const nameEl = card.children[1];
-                const scoreEl = card.children[2];
+        async function captureFinal() {
+            if (typeof html2canvas === 'undefined') {
+                return null;
+            }
+            const canvas = await html2canvas(document.getElementById('final-capture'), {
+                backgroundColor: '#F9F5F1',
+                scale: Math.max(2, window.devicePixelRatio || 1),
+                onclone: (doc) => {
+                    const fixStyle = doc.createElement('style');
+                    fixStyle.textContent = `
+                        .podium-reveal { opacity: 1 !important; transform: none !important; animation: none !important; }
+                        .champion-shimmer::after { display: none !important; content: none !important; }
+                    `;
+                    doc.head.appendChild(fixStyle);
 
-                card.style.display = 'table';
-                card.style.width = '100%';
-                card.style.boxSizing = 'border-box';
+                    doc.querySelectorAll('#final-ranking > div').forEach(card => {
+                        const badge = card.children[0];
+                        const nameEl = card.children[1];
+                        const scoreEl = card.children[2];
 
-                if (badge) {
-                    const badgeCell = doc.createElement('div');
-                    badgeCell.style.display = 'table-cell';
-                    badgeCell.style.verticalAlign = 'middle';
-                    badgeCell.style.width = '40px';
+                        card.style.display = 'table';
+                        card.style.width = '100%';
+                        card.style.boxSizing = 'border-box';
 
-                    badge.style.display = 'block';
-                    badge.style.width = '40px';
-                    badge.style.height = '40px';
-                    badge.style.textAlign = 'center';
-                    badge.style.lineHeight = '28px';
-                    badge.style.padding = '0';
+                        if (badge) {
+                            const badgeCell = doc.createElement('div');
+                            badgeCell.style.display = 'table-cell';
+                            badgeCell.style.verticalAlign = 'middle';
+                            badgeCell.style.width = '40px';
 
-                    card.insertBefore(badgeCell, badge);
-                    badgeCell.appendChild(badge);
-                }
+                            badge.style.display = 'block';
+                            badge.style.width = '40px';
+                            badge.style.height = '40px';
+                            badge.style.textAlign = 'center';
+                            badge.style.lineHeight = '28px';
+                            badge.style.padding = '0';
 
-                if (nameEl) {
-                    nameEl.style.display = 'table-cell';
-                    nameEl.style.verticalAlign = 'middle';
-                    nameEl.style.width = '100%';
-                    nameEl.style.overflow = 'visible';
-                    nameEl.style.whiteSpace = 'normal';
-                    nameEl.style.wordBreak = 'break-word';
-                    nameEl.style.lineHeight = '1.3';
-                    nameEl.style.padding = '2px 12px 16px 12px';
+                            card.insertBefore(badgeCell, badge);
+                            badgeCell.appendChild(badge);
+                        }
 
-                    nameEl.querySelectorAll('span').forEach(span => {
-                        span.style.overflow = 'visible';
-                        span.style.textOverflow = 'clip';
-                        span.style.whiteSpace = 'normal';
-                        span.style.lineHeight = '1.3';
+                        if (nameEl) {
+                            nameEl.style.display = 'table-cell';
+                            nameEl.style.verticalAlign = 'middle';
+                            nameEl.style.width = '100%';
+                            nameEl.style.overflow = 'visible';
+                            nameEl.style.whiteSpace = 'normal';
+                            nameEl.style.wordBreak = 'break-word';
+                            nameEl.style.lineHeight = '1.3';
+                            nameEl.style.padding = '2px 12px 16px 12px';
+
+                            nameEl.querySelectorAll('span').forEach(span => {
+                                span.style.overflow = 'visible';
+                                span.style.textOverflow = 'clip';
+                                span.style.whiteSpace = 'normal';
+                                span.style.lineHeight = '1.3';
+                            });
+                        }
+
+                        if (scoreEl) {
+                            scoreEl.style.display = 'table-cell';
+                            scoreEl.style.verticalAlign = 'middle';
+                            scoreEl.style.textAlign = 'right';
+                            scoreEl.style.whiteSpace = 'nowrap';
+                            scoreEl.style.lineHeight = '1';
+                            scoreEl.style.paddingBottom = '24px';
+                            scoreEl.style.paddingRight = '10px';
+                            scoreEl.style.position = 'static';
+                        }
+                    });
+
+                    doc.querySelectorAll('#final-capture .crown-badge').forEach(crown => {
+                        crown.style.display = 'inline-block';
+                        crown.style.marginBottom = '4px';
+                        crown.style.marginRight = '4px';
                     });
                 }
-
-                if (scoreEl) {
-                    scoreEl.style.display = 'table-cell';
-                    scoreEl.style.verticalAlign = 'middle';
-                    scoreEl.style.textAlign = 'right';
-                    scoreEl.style.whiteSpace = 'nowrap';
-                    scoreEl.style.lineHeight = '1';
-                    scoreEl.style.paddingBottom = '24px';
-		    scoreEl.style.paddingRight = '10px';
-                    scoreEl.style.position = 'static';
-                }
             });
-
-            // 3. Sejajarkan ikon mahkota
-            doc.querySelectorAll('#final-capture .crown-badge').forEach(crown => {
-                crown.style.display = 'inline-block';
-                crown.style.marginBottom = '4px';
-                crown.style.marginRight = '4px';
-            });
+            return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         }
-    });
-    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-}
 
         function finalFileName() {
             const d = new Date(finishedAt || Date.now());
@@ -3270,14 +3865,17 @@ async function captureFinal() {
         function renderHistory() {
             const container = document.getElementById('history-container');
             const undoBtn = document.getElementById('btn-undo');
+            const editable = canEditGame();
 
             if (roundHistory.length === 0) {
-                container.innerHTML = `<p class="text-xs text-center text-gray-400 py-4 italic">Belum ada skor yang dicatat.</p>`;
-                undoBtn.classList.add('hidden');
+                container.innerHTML = `<p class="text-xs text-center text-gray-400 py-3 italic">Belum ada skor yang dicatat.</p>`;
+                if (undoBtn) undoBtn.classList.add('hidden');
                 return;
             }
 
-            undoBtn.classList.remove('hidden');
+            if (undoBtn) {
+                undoBtn.classList.toggle('hidden', !editable);
+            }
             container.innerHTML = '';
 
             [...roundHistory].reverse().forEach((item) => {
@@ -3289,13 +3887,12 @@ async function captureFinal() {
                     : '🎯 Buangan';
 
                 const logHtml = `
-                    <div class="bg-mjbg/60 p-2.5 rounded-xl text-xs space-y-1 border border-mjgreen/10">
+                    <div class="bg-mjbg/60 px-3 py-2 rounded-xl text-xs border border-mjgreen/10 flex flex-col gap-0.5">
                         <div class="flex items-center justify-between font-bold ${isPenalty ? 'text-mjdanger' : 'text-mjgreen'}">
-                            <span>${isPenalty && !item.endsRound ? `Penalti (Ronde ${item.round})` : `Ronde ${item.round}`}</span>
-                            <span class="text-[10px] font-medium bg-mjlight px-2 py-0.5 rounded-full">${typeof item.roundWind === 'number' ? WINDS[item.roundWind].char + ' · ' : ''}${typeLabel}</span>
+                            <span>R${item.round}: ${escapeHtml(describeRound(item))}</span>
+                            <span class="text-[10px] font-semibold bg-mjlight px-2 py-0.5 rounded-full shrink-0 ml-1">${typeof item.roundWind === 'number' ? WINDS[item.roundWind].char + ' · ' : ''}${typeLabel}</span>
                         </div>
-                        <div class="text-gray-700 text-[11px]">${escapeHtml(describeRound(item))}</div>
-                        <div class="text-[10px] text-gray-500 font-mono pt-1 border-t border-gray-200/60 truncate">${escapeHtml(changes)}</div>
+                        <div class="text-[11px] text-gray-500 font-mono truncate">${escapeHtml(changes)}</div>
                     </div>
                 `;
                 container.innerHTML += logHtml;
@@ -3303,6 +3900,7 @@ async function captureFinal() {
         }
 
         function undoLastRound() {
+            if (!canEditGame()) return;
             triggerHaptic(30);
             if (roundHistory.length === 0) return;
 
@@ -3312,7 +3910,7 @@ async function captureFinal() {
             });
 
             if (lastRound.winType !== 'penalti' || lastRound.endsRound) currentRound--;
-            saveState();
+            saveState(true);
             renderScoreboard();
             renderHistory();
         }
@@ -3333,6 +3931,7 @@ async function captureFinal() {
         let selectedPenaltyDiscarderIndex = null;
 
         function openPenaltyModal() {
+            if (!canEditGame()) return;
             triggerHaptic(30);
             selectedPenaltyIndex = null;
             selectedPenaltyType = null;
@@ -3441,6 +4040,7 @@ async function captureFinal() {
         }
 
         function submitPenalty() {
+            if (!canEditGame()) return;
             triggerHaptic(40);
             if (selectedPenaltyIndex === null) {
                 showPenaltyError('Pilih pemain yang mendapat penalti.');
@@ -3484,7 +4084,7 @@ async function captureFinal() {
             });
 
             currentRound++;
-            saveState();
+            saveState(true);
             renderScoreboard();
             renderHistory();
             closePenaltyModal();
@@ -3495,6 +4095,7 @@ async function captureFinal() {
         let renameIndex = null;
 
         function openRenameModal(idx) {
+            if (!canEditGame()) return;
             triggerHaptic(20);
             renameIndex = idx;
             const input = document.getElementById('rename-input');
@@ -3511,12 +4112,13 @@ async function captureFinal() {
         }
 
         function saveRename() {
+            if (!canEditGame()) return;
             triggerHaptic(30);
             if (renameIndex === null) return;
             const name = document.getElementById('rename-input').value.trim();
             if (!name) return;
             players[renameIndex].name = name;
-            saveState();
+            saveState(true);
             renderScoreboard();
             renderHistory();
             closeRenameModal();
@@ -3525,6 +4127,15 @@ async function captureFinal() {
         // --- RESET APP ---
         function openResetModal() {
             triggerHaptic(30);
+            const desc = document.getElementById('reset-modal-desc');
+            const leaveWrap = document.getElementById('reset-leave-room-wrap');
+            if (roomCode && isHost) {
+                if (desc) desc.innerText = `Skor dan riwayat ronde di Room ${roomCode} akan direset ke 0 (TV tetap terhubung).`;
+                if (leaveWrap) leaveWrap.classList.remove('hidden');
+            } else {
+                if (desc) desc.innerText = 'Semua nama pemain dan riwayat skor akan terhapus dan direset ke 0.';
+                if (leaveWrap) leaveWrap.classList.add('hidden');
+            }
             document.getElementById('modal-reset').classList.remove('hidden');
         }
 
@@ -3544,6 +4155,21 @@ async function captureFinal() {
                 cancelAnimationFrame(championCountFrame);
                 championCountFrame = null;
             }
+
+            // Jika sedang menjadi Host Room Online, reset skor ke 0 di room yang sama agar TV tetap tersambung
+            if (roomCode && isHost) {
+                players = players.map((p, idx) => ({ id: idx, name: p.name, score: 0 }));
+                roundHistory = [];
+                currentRound = 1;
+                startedAt = Date.now();
+                finishedAt = null;
+                saveState(true);
+                document.getElementById('screen-final').classList.add('hidden');
+                showDashboard();
+                showToast(`Skor Room ${roomCode} direset ke 0.`);
+                return;
+            }
+
             document.getElementById('p1-input').value = 'Budi';
             document.getElementById('p2-input').value = 'Joseph';
             document.getElementById('p3-input').value = 'Hansen';
@@ -3563,14 +4189,14 @@ async function captureFinal() {
         }
 
         function escapeHtml(str) {
-            return str.replace(/&/g, "&amp;")
+            return String(str).replace(/&/g, "&amp;")
                       .replace(/</g, "&lt;")
                       .replace(/>/g, "&gt;")
                       .replace(/"/g, "&quot;")
                       .replace(/'/g, "&#039;");
         }
     </script>
-	<script>
+    <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/skor-mahjong/sw.js', {
