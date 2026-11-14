@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahjong YDSP - TV Display Lite</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #062f2c;
+            color: #F9F5F1;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        /* Fokus Remote TV (D-Pad) */
+        input:focus, button:focus {
+            outline: 4px solid #f6c344;
+            outline-offset: 3px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ==================== HALAMAN AWAL: GABUNG ROOM ==================== */
+        #screen-join {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #0b4d47 0%, #052623 100%);
+            padding: 24px;
+        }
+
+        .join-card {
+            background: #F9F5F1;
+            color: #08403C;
+            width: 100%;
+            max-width: 540px;
+            border-radius: 24px;
+            padding: 40px 36px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+            border: 4px solid #d69d2e;
+        }
+
+        .join-title {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: #08403C;
+        }
+
+        .join-subtitle {
+            font-size: 18px;
+            color: #4a6b68;
+            margin-bottom: 28px;
+        }
+
+        .code-input {
+            width: 100%;
+            font-size: 44px;
+            font-weight: 800;
+            letter-spacing: 12px;
+            text-align: center;
+            padding: 16px;
+            border: 3px solid #08403C;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #08403C;
+            margin-bottom: 20px;
+        }
+
+        .btn-join {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 24px;
+            font-weight: 800;
+            border: none;
+            border-radius: 16px;
+            background-color: #08403C;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        .btn-join:hover, .btn-join:focus {
+            background-color: #0e6920;
+        }
+
+        .btn-join:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .join-error {
+            margin-top: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #c53030;
+            min-height: 24px;
+        }
+
+        /* ==================== HALAMAN UTAMA: PAPAN SKOR TV ==================== */
+        #screen-board {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 28px;
+            background-color: #062f2c;
+        }
+
+        /* Header Top Bar */
+        .tv-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #08403C;
+            border: 2px solid rgba(214, 157, 46, 0.45);
+            border-radius: 18px;
+            padding: 14px 24px;
+            margin-bottom: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .app-badge {
+            font-size: 22px;
+            font-weight: 800;
+            color: #f6c344;
+            letter-spacing: 0.5px;
+        }
+
+        .room-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #38a169;
+            display: inline-block;
+        }
+
+        .status-dot.offline {
+            background-color: #e53e3e;
+        }
+
+        /* Info Angin Meja & Ronde di Tengah Header */
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .wind-banner {
+            background: #F9F5F1;
+            color: #08403C;
+            padding: 8px 24px;
+            border-radius: 14px;
+            border: 3px solid #d69d2e;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .wind-char {
+            font-size: 32px;
+            font-weight: 900;
+            color: #c53030;
+            line-height: 1;
+        }
+
+        .wind-label {
+            font-size: 20px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .round-badge {
+            font-size: 20px;
+            font-weight: 800;
+            color: #F9F5F1;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 10px 18px;
+            border-radius: 12px;
+        }
+
+        /* Tombol Keluar Room */
+        .btn-leave {
+            background-color: #9b2c2c;
+            color: #ffffff;
+            border: 2px solid #fc8181;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .btn-leave:hover, .btn-leave:focus {
+            background-color: #c53030;
+        }
+
+        /* Grid 4 Pemain */
+        .players-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 18px;
+        }
+
+        .player-card {
+            background: #F9F5F1;
+            color: #08403C;
+            border-radius: 22px;
+            padding: 22px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            border: 4px solid transparent;
+            position: relative;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .player-card.is-dealer {
+            border-color: #d69d2e;
+            background: linear-gradient(180deg, #fffdf7 0%, #fff6db 100%);
+        }
+
+        /* Efek Visual Perubahan Skor */
+        .player-card.flash-up {
+            border-color: #2f855a !important;
+            box-shadow: 0 0 35px rgba(72, 187, 120, 0.85);
+            transform: scale(1.025);
+        }
+
+        .player-card.flash-down {
+            border-color: #c53030 !important;
+            box-shadow: 0 0 35px rgba(245, 101, 101, 0.85);
+            transform: scale(0.985);
+        }
+
+        .card-top {
+            width: 100%;
+        }
+
+        .seat-tag {
+            display: inline-block;
+            background: #e2efe4;
+            color: #08403C;
+            font-size: 20px;
+            font-weight: 800;
+            padding: 6px 16px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+        }
+
+        .player-name {
+            font-size: 34px;
+            font-weight: 800;
+            color: #08403C;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        .score-wrapper {
+            position: relative;
+            margin: 12px 0;
+        }
+
+        .player-score {
+            font-size: 76px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -2px;
+            transition: transform 0.25s ease;
+        }
+
+        .player-score.score-pos {
+            color: #0e6920;
+        }
+
+        .player-score.score-neg {
+            color: #c53030;
+        }
+
+        .player-score.score-zero {
+            color: #08403C;
+        }
+
+        .score-pop {
+            transform: scale(1.18);
+        }
+
+        /* Lencana Perubahan Poin (+ / -) */
+        .delta-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 18px;
+            border-radius: 999px;
+            font-size: 24px;
+            font-weight: 900;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .delta-badge.show {
+            opacity: 1;
+        }
+
+        .delta-badge.plus {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 2px solid #38a169;
+        }
+
+        .delta-badge.minus {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 2px solid #e53e3e;
+        }
+
+        .card-bottom {
+            width: 100%;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dealer-badge {
+            background: #d69d2e;
+            color: #1a202c;
+            font-size: 20px;
+            font-weight: 900;
+            padding: 8px 22px;
+            border-radius: 12px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(214, 157, 46, 0.35);
+        }
+
+        .non-dealer-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #718096;
+        }
+
+        /* Footer Info Ronde Terakhir */
+        .tv-footer {
+            background: #08403C;
+            border-radius: 14px;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 18px;
+            color: #cbd5e0;
+        }
+
+        .last-event {
+            font-weight: 700;
+            color: #f6c344;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== LAYAR 1: GABUNG ROOM ==================== -->
+    <div id="screen-join">
+        <div class="join-card">
+            <div class="join-title">🀄 MAHJONG YDSP</div>
+            <div class="join-subtitle">Masukkan 6 Digit Kode Sync dari HP Pencatat Skor</div>
+            
+            <input 
+                type="tel" 
+                id="inputRoomCode" 
+                class="code-input" 
+                maxlength="6" 
+                placeholder="000000" 
+                autocomplete="off"
+                autofocus
+            >
+            
+            <button id="btnJoinRoom" class="btn-join" onclick="handleJoinRoom()">
+                GABUNG ROOM
+            </button>
+
+            <div id="joinError" class="join-error"></div>
+        </div>
+    </div>
+
+    <!-- ==================== LAYAR 2: TAMPILAN SKOR TV ==================== -->
+    <div id="screen-board" class="hidden">
+        <header class="tv-header">
+            <div class="header-left">
+                <div class="app-badge">🀄 YDSP LIVE</div>
+                <div class="room-pill">
+                    <span id="connDot" class="status-dot"></span>
+                    <span>ROOM: <strong id="displayRoomCode">------</strong></span>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="wind-banner">
+                    <span id="windChar" class="wind-char">東</span>
+                    <span id="windText" class="wind-label">ANGIN TIMUR</span>
+                </div>
+                <div id="roundDisplay" class="round-badge">Ronde 1</div>
+            </div>
+
+            <button id="btnLeaveRoom" class="btn-leave" onclick="leaveRoom()">
+                Keluar Room
+            </button>
+        </header>
+
+        <main class="players-grid" id="playersGrid">
+            <!-- 4 Kartu Pemain dirender oleh JS -->
+        </main>
+
+        <footer class="tv-footer">
+            <div>Status: <span id="syncStatusText">Terhubung Real-Time</span></div>
+            <div id="lastHistoryText" class="last-event">Menunggu catatan ronde...</div>
+        </footer>
+    </div>
+
+    <!-- Firebase Compat SDK (Ringan & Kompatibel dengan Tizen Browser) -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+    <script>
+        // Konfigurasi Firebase Anda
+        var firebaseConfig = {
+            apiKey: "AIzaSyBuAhFdYzb3eGFO8fNzL-0n_pIorCryhyM",
+            authDomain: "skor-mahjong.firebaseapp.com",
+            databaseURL: "https://skor-mahjong-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "skor-mahjong",
+            storageBucket: "skor-mahjong.firebasestorage.app",
+            messagingSenderId: "309152185233",
+            appId: "1:309152185233:web:1c76986697481d67d27830",
+            measurementId: "G-L60NDEK4M8"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.database();
+
+        var WINDS = [
+            { char: '東', name: 'Timur' },
+            { char: '南', name: 'Selatan' },
+            { char: '西', name: 'Barat' },
+            { char: '北', name: 'Utara' }
+        ];
+
+        var STORAGE_ROOM_KEY = 'ydsp_tv_room_code';
+        var currentRoomCode = null;
+        var currentRoomRef = null;
+        var previousScores = null;
+        var deltaTimers = [null, null, null, null];
+        var audioCtx = null;
+
+        // Inisialisasi Web Audio API untuk suara ding halus
+        function initAudio() {
+            try {
+                var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass && !audioCtx) {
+                    audioCtx = new AudioContextClass();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch (e) {}
+        }
+
+        function playSubtleDing() {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                var now = audioCtx.currentTime;
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+
+                // Nada lonceng lembut (A5 -> E6 harmonik halus)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08);
+
+                // Volume sangat halus (subtle)
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.7);
+            } catch (e) {}
+        }
+
+        // Dukungan tombol Enter di keyboard / remote TV
+        document.getElementById('inputRoomCode').addEventListener('keyup', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                handleJoinRoom();
+            }
+        });
+
+        function handleJoinRoom() {
+            initAudio();
+            var inputEl = document.getElementById('inputRoomCode');
+            var errEl = document.getElementById('joinError');
+            var btnEl = document.getElementById('btnJoinRoom');
+            var code = (inputEl.value || '').trim();
+
+            if (!/^[0-9]{6}$/.test(code)) {
+                errEl.textContent = 'Kode harus berupa 6 digit angka.';
+                inputEl.focus();
+                return;
+            }
+
+            errEl.textContent = '';
+            btnEl.disabled = true;
+            btnEl.textContent = 'MENGHUBUNGKAN...';
+
+            var testRef = db.ref('rooms/' + code);
+            testRef.once('value').then(function(snapshot) {
+                btnEl.disabled = false;
+                btnEl.textContent = 'GABUNG ROOM';
+
+                if (!snapshot.exists()) {
+                    errEl.textContent = 'Room ' + code + ' tidak ditemukan. Periksa kode di HP Host.';
+                    return;
+                }
+
+                connectToRoom(code);
+            }).catch(function(err) {
+                btnEl.disabled = false;
+                btnEl.textContent = 'GABUNG ROOM';
+                errEl.textContent = 'Gagal terhubung ke server. Cek koneksi internet TV.';
+            });
+        }
+
+        function connectToRoom(code) {
+            if (currentRoomRef) {
+                currentRoomRef.off();
+            }
+
+            currentRoomCode = code;
+            previousScores = null;
+            localStorage.setItem(STORAGE_ROOM_KEY, code);
+
+            document.getElementById('displayRoomCode').textContent = code;
+            document.getElementById('screen-join').classList.add('hidden');
+            document.getElementById('screen-board').classList.remove('hidden');
+
+            // Pantau status koneksi Firebase
+            db.ref('.info/connected').on('value', function(snap) {
+                var dot = document.getElementById('connDot');
+                var txt = document.getElementById('syncStatusText');
+                if (snap.val() === true) {
+                    dot.classList.remove('offline');
+                    txt.textContent = 'Terhubung Real-Time';
+                } else {
+                    dot.classList.add('offline');
+                    txt.textContent = 'Menghubungkan ulang...';
+                }
+            });
+
+            // Dengarkan perubahan data room secara live
+            currentRoomRef = db.ref('rooms/' + code);
+            currentRoomRef.on('value', function(snapshot) {
+                var data = snapshot.val();
+                if (!data) {
+                    document.getElementById('lastHistoryText').textContent = 'Room telah ditutup oleh Host.';
+                    return;
+                }
+                renderBoard(data);
+            });
+        }
+
+        function leaveRoom() {
+            if (currentRoomRef) {
+                currentRoomRef.off();
+                currentRoomRef = null;
+            }
+            currentRoomCode = null;
+            previousScores = null;
+            localStorage.removeItem(STORAGE_ROOM_KEY);
+
+            document.getElementById('screen-board').classList.add('hidden');
+            document.getElementById('screen-join').classList.remove('hidden');
+            document.getElementById('joinError').textContent = '';
+
+            var inputEl = document.getElementById('inputRoomCode');
+            inputEl.value = '';
+            inputEl.focus();
+        }
+
+        // Normalisasi struktur data agar kompatibel dengan berbagai versi index.html
+        function normalizeRoomData(raw) {
+            var state = raw.state ? raw.state : raw;
+            var players = [];
+
+            if (Array.isArray(state.players)) {
+                for (var i = 0; i < 4; i++) {
+                    var p = state.players[i];
+                    if (typeof p === 'string') {
+                        var sc = (state.scores && typeof state.scores[i] === 'number') ? state.scores[i] : 0;
+                        players.push({ name: p || ('Pemain ' + (i + 1)), score: sc });
+                    } else if (p && typeof p === 'object') {
+                        players.push({
+                            name: p.name || ('Pemain ' + (i + 1)),
+                            score: typeof p.score === 'number' ? p.score : 0
+                        });
+                    } else {
+                        players.push({ name: 'Pemain ' + (i + 1), score: 0 });
+                    }
+                }
+            } else {
+                for (var j = 0; j < 4; j++) {
+                    var nm = (state.names && state.names[j]) ? state.names[j] : ('Pemain ' + (j + 1));
+                    var scr = (state.scores && typeof state.scores[j] === 'number') ? state.scores[j] : 0;
+                    players.push({ name: nm, score: scr });
+                }
+            }
+
+            var dealerIdx = 0;
+            if (typeof state.dealerIndex === 'number') dealerIdx = state.dealerIndex;
+            else if (typeof state.dealer === 'number') dealerIdx = state.dealer;
+            else if (typeof state.bandar === 'number') dealerIdx = state.bandar;
+
+            var windIdx = 0;
+            if (typeof state.roundWindIndex === 'number') windIdx = state.roundWindIndex;
+            else if (typeof state.windIndex === 'number') windIdx = state.windIndex;
+            else if (typeof state.prevalentWind === 'number') windIdx = (state.prevalentWind - 1 + 4) % 4;
+
+            var roundNum = state.round || state.roundNumber || 1;
+            var history = Array.isArray(state.history) ? state.history : (Array.isArray(state.rounds) ? state.rounds : []);
+
+            return {
+                players: players,
+                dealerIndex: dealerIdx % 4,
+                windIndex: windIdx % 4,
+                round: roundNum,
+                history: history
+            };
+        }
+
+        function renderBoard(rawData) {
+            var data = normalizeRoomData(rawData);
+
+            // Update Angin Meja & Ronde
+            var currentWind = WINDS[data.windIndex] || WINDS[0];
+            document.getElementById('windChar').textContent = currentWind.char;
+            document.getElementById('windText').textContent = 'ANGIN ' + currentWind.name.toUpperCase();
+            document.getElementById('roundDisplay').textContent = 'Ronde ' + data.round;
+
+            // Update Info Ronde Terakhir di Footer
+            var lastHistEl = document.getElementById('lastHistoryText');
+            if (data.history.length > 0) {
+                var lastItem = data.history[data.history.length - 1];
+                if (typeof lastItem === 'string') {
+                    lastHistEl.textContent = 'Terakhir: ' + lastItem;
+                } else if (lastItem && lastItem.summary) {
+                    lastHistEl.textContent = 'Terakhir: ' + lastItem.summary;
+                } else if (lastItem && lastItem.winner) {
+                    lastHistEl.textContent = 'Terakhir: ' + lastItem.winner + ' menang';
+                } else {
+                    lastHistEl.textContent = 'Total ' + data.history.length + ' ronde tercatat';
+                }
+            } else {
+                lastHistEl.textContent = 'Permainan baru dimulai';
+            }
+
+            // Cek perubahan skor untuk animasi & suara
+            var currentScores = data.players.map(function(p) { return p.score; });
+            var deltas = [0, 0, 0, 0];
+            var hasScoreChanged = false;
+
+            if (previousScores !== null) {
+                for (var i = 0; i < 4; i++) {
+                    var diff = currentScores[i] - previousScores[i];
+                    if (diff !== 0) {
+                        deltas[i] = diff;
+                        hasScoreChanged = true;
+                    }
+                }
+            }
+
+            // Render 4 Kartu Pemain
+            var grid = document.getElementById('playersGrid');
+            var html = '';
+
+            for (var idx = 0; idx < 4; idx++) {
+                var player = data.players[idx];
+                var isDealer = (idx === data.dealerIndex);
+                // Angin duduk berputar relatif terhadap posisi Bandar (Bandar = Timur)
+                var seatWindIdx = (idx - data.dealerIndex + 4) % 4;
+                var seatWind = WINDS[seatWindIdx];
+
+                var scoreClass = 'score-zero';
+                var scoreText = '0';
+                if (player.score > 0) {
+                    scoreClass = 'score-pos';
+                    scoreText = '+' + player.score;
+                } else if (player.score < 0) {
+                    scoreClass = 'score-neg';
+                    scoreText = String(player.score);
+                }
+
+                html +=
+                    '<div id="pcard-' + idx + '" class="player-card ' + (isDealer ? 'is-dealer' : '') + '">' +
+                        '<div class="card-top">' +
+                            '<div class="seat-tag">' + seatWind.char + ' ' + seatWind.name + '</div>' +
+                            '<div class="player-name">' + escapeHtml(player.name) + '</div>' +
+                        '</div>' +
+                        '<div class="score-wrapper">' +
+                            '<div id="pscore-' + idx + '" class="player-score ' + scoreClass + '">' + scoreText + '</div>' +
+                            '<div id="pdelta-' + idx + '" class="delta-badge"></div>' +
+                        '</div>' +
+                        '<div class="card-bottom">' +
+                            (isDealer
+                                ? '<div class="dealer-badge">🀄 BANDAR</div>'
+                                : '<div class="non-dealer-label">Pemain</div>') +
+                        '</div>' +
+                    '</div>';
+            }
+
+            grid.innerHTML = html;
+
+            // Picu efek visual & suara jika ada perubahan skor
+            if (hasScoreChanged) {
+                playSubtleDing();
+                for (var k = 0; k < 4; k++) {
+                    if (deltas[k] !== 0) {
+                        triggerScoreHighlight(k, deltas[k]);
+                    }
+                }
+            }
+
+            previousScores = currentScores;
+        }
+
+        function triggerScoreHighlight(idx, diff) {
+            var card = document.getElementById('pcard-' + idx);
+            var scoreEl = document.getElementById('pscore-' + idx);
+            var deltaEl = document.getElementById('pdelta-' + idx);
+            if (!card || !scoreEl || !deltaEl) return;
+
+            if (deltaTimers[idx]) {
+                clearTimeout(deltaTimers[idx]);
+            }
+
+            card.classList.add(diff > 0 ? 'flash-up' : 'flash-down');
+            scoreEl.classList.add('score-pop');
+
+            deltaEl.textContent = (diff > 0 ? '+' : '') + diff;
+            deltaEl.className = 'delta-badge show ' + (diff > 0 ? 'plus' : 'minus');
+
+            setTimeout(function() {
+                if (card) card.classList.remove('flash-up', 'flash-down');
+                if (scoreEl) scoreEl.classList.remove('score-pop');
+            }, 1800);
+
+            deltaTimers[idx] = setTimeout(function() {
+                if (deltaEl) deltaEl.classList.remove('show');
+            }, 6000);
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Auto-reconnect jika TV sempat refresh saat sudah tergabung di room
+        window.onload = function() {
+            var savedCode = localStorage.getItem(STORAGE_ROOM_KEY);
+            if (savedCode && /^[0-9]{6}$/.test(savedCode)) {
+                document.getElementById('inputRoomCode').value = savedCode;
+                connectToRoom(savedCode);
+            }
+        };
+    </script>
+</body>
+</html>
