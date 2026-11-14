@@ -307,8 +307,8 @@
                          alt="發" 
                          class="w-full h-full object-contain select-none">
                 </div>
-                <div class="leading-tight truncate">
-                    <h1 class="text-base sm:text-lg font-black tracking-wider uppercase truncate">SKOR MAHJONG</h1>
+                <div class="leading-tight min-w-0">
+                    <h1 class="text-base sm:text-lg font-black tracking-wider uppercase whitespace-nowrap">SKOR MAHJONG</h1>
                     <p class="text-[10px] font-semibold tracking-wide text-white/75">Sistem Bandung YDSP</p>
                 </div>
             </div>
@@ -415,7 +415,7 @@
         <!-- ========================================== -->
         <section id="screen-dashboard" class="hidden space-y-4">
             
-            <!-- Info Bar: Angin Meja & Bandar Saat Ini -->
+            <!-- Info Bar: Angin Meja, Bandar Saat Ini & Ronde -->
             <div class="grid grid-cols-2 gap-2.5">
                 <div class="bg-white rounded-2xl px-3.5 py-2.5 shadow-sm border border-mjgreen/15 flex items-center justify-between">
                     <div>
@@ -425,9 +425,9 @@
                     <span id="round-wind-char" class="text-2xl font-black text-mjgreen leading-none bg-mjbg px-2.5 py-1.5 rounded-xl border border-mjgreen/10">東</span>
                 </div>
 
-                <div class="bg-white rounded-2xl px-3.5 py-2.5 shadow-sm border border-mjdanger/25 flex items-center justify-between">
+                <div class="bg-white rounded-2xl px-3.5 py-2.5 shadow-sm border border-mjgreen/15 flex items-center justify-between">
                     <div class="min-w-0 pr-1">
-                        <span class="block text-[9px] font-extrabold uppercase tracking-wider text-mjdanger">Bandar (東)</span>
+                        <span class="block text-[9px] font-extrabold uppercase tracking-wider text-green/60">Bandar (東)</span>
                         <span id="current-dealer-name" class="block text-sm font-black text-mjdanger truncate">Budi</span>
                     </div>
                     <div class="bg-mjgreen text-white px-2.5 py-1 rounded-xl text-center leading-tight shrink-0 shadow-sm">
@@ -935,7 +935,7 @@
             }
         });
 
-	// Sinkronisasi offset waktu server Firebase agar timer HP Host & TV akurat
+        // Sinkronisasi offset waktu server Firebase agar timer HP Host & TV akurat
         let serverTimeOffsetMs = 0;
         const offsetRef = ref(db, '.info/serverTimeOffset');
         onValue(offsetRef, (snap) => {
@@ -1766,7 +1766,8 @@
             if (finishedAt) {
                 showFinalScreen(!wasFinished);
             } else {
-                document.getElementById('screen-final').classList.add('hidden');
+                const finalScreen = document.getElementById('screen-final');
+                if (finalScreen) finalScreen.classList.add('hidden');
                 showDashboard();
             }
         }
@@ -1774,7 +1775,6 @@
         function attachOnlineRoomListener() {
             if (!roomCode || !window.fbRoomService) return;
             window.fbRoomService.subscribeRoom(roomCode, (data) => {
-                // Jika user adalah tamu/TV (atau ada sinkronisasi dari luar), perbarui UI
                 if (!isHost) {
                     applyRemoteRoomData(data);
                 }
@@ -1937,17 +1937,26 @@
             clearState();
 
             updateRoomBadgeUI();
-            document.getElementById('screen-dashboard').classList.add('hidden');
-            document.getElementById('screen-final').classList.add('hidden');
-            document.getElementById('round-counter-badge').classList.add('hidden');
-            document.getElementById('screen-setup').classList.remove('hidden');
+            const dashEl = document.getElementById('screen-dashboard');
+            const finalEl = document.getElementById('screen-final');
+            const roundBadge = document.getElementById('round-counter-badge');
+            const setupEl = document.getElementById('screen-setup');
+
+            if (dashEl) dashEl.classList.add('hidden');
+            if (finalEl) finalEl.classList.add('hidden');
+            if (roundBadge) roundBadge.classList.add('hidden');
+            if (setupEl) setupEl.classList.remove('hidden');
             showToast('Keluar dari Room Online.');
         }
 
         function showDashboard() {
-            document.getElementById('screen-setup').classList.add('hidden');
-            document.getElementById('screen-dashboard').classList.remove('hidden');
-            document.getElementById('round-counter-badge').classList.remove('hidden');
+            const setupEl = document.getElementById('screen-setup');
+            const dashEl = document.getElementById('screen-dashboard');
+            const roundBadge = document.getElementById('round-counter-badge');
+
+            if (setupEl) setupEl.classList.add('hidden');
+            if (dashEl) dashEl.classList.remove('hidden');
+            if (roundBadge) roundBadge.classList.remove('hidden');
 
             updateControlPermissionsUI();
             renderScoreboard();
@@ -2032,10 +2041,14 @@
         }
 
         function renderScoreboard() {
-            document.getElementById('current-round-num').innerText = currentRound;
+            const roundNumEl = document.getElementById('current-round-num');
+            if (roundNumEl) roundNumEl.innerText = currentRound;
+
             const roundWind = WINDS[getRoundWindIndex()];
-            document.getElementById('round-wind-char').innerText = roundWind.char;
-            document.getElementById('round-wind-name').innerText = roundWind.name;
+            const roundWindCharEl = document.getElementById('round-wind-char');
+            const roundWindNameEl = document.getElementById('round-wind-name');
+            if (roundWindCharEl) roundWindCharEl.innerText = roundWind.char;
+            if (roundWindNameEl) roundWindNameEl.innerText = roundWind.name;
 
             const dealerIdx = getDealerIndex();
             const dealerEl = document.getElementById('current-dealer-name');
@@ -2044,6 +2057,7 @@
             }
 
             const container = document.getElementById('scoreboard-grid');
+            if (!container) return;
             container.innerHTML = '';
 
             const maxScore = Math.max(...players.map(p => p.score));
@@ -2104,7 +2118,7 @@
                     `;
                 } else {
                     const windBadge = isDealer
-                        ? `<span class="inline-flex items-center space-x-1 bg-mjdanger text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"><span>${WINDS[0].char}</span><span>BANDAR</span></span>`
+                        ? `<span class="inline-flex items-center space-x-1 bg-mjgreen text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"><span>${WINDS[0].char}</span><span>BANDAR</span></span>`
                         : `<span class="inline-flex items-center space-x-1 bg-mjbg border border-mjgreen/20 text-mjgreen text-[10px] font-bold px-2 py-0.5 rounded-full"><span>${WINDS[seatWind].char}</span><span>${WINDS[seatWind].name}</span></span>`;
 
                     const cardBorderClass = isDealer
@@ -3657,10 +3671,15 @@
                 championCountFrame = null;
             }
 
-            document.getElementById('screen-setup').classList.add('hidden');
-            document.getElementById('screen-dashboard').classList.add('hidden');
-            document.getElementById('round-counter-badge').classList.add('hidden');
-            document.getElementById('screen-final').classList.remove('hidden');
+            const setupEl = document.getElementById('screen-setup');
+            const dashEl = document.getElementById('screen-dashboard');
+            const roundBadge = document.getElementById('round-counter-badge');
+            const finalEl = document.getElementById('screen-final');
+
+            if (setupEl) setupEl.classList.add('hidden');
+            if (dashEl) dashEl.classList.add('hidden');
+            if (roundBadge) roundBadge.classList.add('hidden');
+            if (finalEl) finalEl.classList.remove('hidden');
             updateRoomBadgeUI();
 
             const finalResetBtn = document.getElementById('btn-final-new-game');
@@ -4171,7 +4190,8 @@
                 startedAt = Date.now();
                 finishedAt = null;
                 saveState(true);
-                document.getElementById('screen-final').classList.add('hidden');
+                const finalEl = document.getElementById('screen-final');
+                if (finalEl) finalEl.classList.add('hidden');
                 showDashboard();
                 showToast(`Skor Room ${roomCode} direset ke 0.`);
                 return;
@@ -4189,10 +4209,15 @@
             finishedAt = null;
             clearState();
 
-            document.getElementById('screen-dashboard').classList.add('hidden');
-            document.getElementById('screen-final').classList.add('hidden');
-            document.getElementById('round-counter-badge').classList.add('hidden');
-            document.getElementById('screen-setup').classList.remove('hidden');
+            const dashEl = document.getElementById('screen-dashboard');
+            const finalEl = document.getElementById('screen-final');
+            const roundBadge = document.getElementById('round-counter-badge');
+            const setupEl = document.getElementById('screen-setup');
+
+            if (dashEl) dashEl.classList.add('hidden');
+            if (finalEl) finalEl.classList.add('hidden');
+            if (roundBadge) roundBadge.classList.add('hidden');
+            if (setupEl) setupEl.classList.remove('hidden');
         }
 
         function escapeHtml(str) {
