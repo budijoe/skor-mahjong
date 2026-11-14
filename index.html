@@ -936,6 +936,14 @@
             }
         });
 
+	// Sinkronisasi offset waktu server Firebase agar timer HP Host & TV akurat
+        let serverTimeOffsetMs = 0;
+        const offsetRef = ref(db, '.info/serverTimeOffset');
+        onValue(offsetRef, (snap) => {
+            serverTimeOffsetMs = snap.val() || 0;
+        });
+        window.getSyncedNow = () => Date.now() + serverTimeOffsetMs;
+
         window.fbRoomService = {
             isConnected() {
                 return isFirebaseConnected;
@@ -1802,7 +1810,7 @@
                 ];
                 roundHistory = [];
                 currentRound = 1;
-                startedAt = Date.now();
+                startedAt = window.getSyncedNow ? window.getSyncedNow() : Date.now();
                 finishedAt = null;
 
                 const newCode = await window.fbRoomService.generateUniqueCode();
