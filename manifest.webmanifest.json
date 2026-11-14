@@ -1,0 +1,38 @@
+{
+  "id": "/skor-mahjong/",
+  "name": "Skor Mahjong - Sistem Bandung YDSP",
+  "short_name": "Skor Mahjong",
+  "description": "Aplikasi pencatat skor dan kalkulator tangan Mahjong Sistem Bandung YDSP",
+  "scope": "/skor-mahjong/",
+  "start_url": "/skor-mahjong/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F9F5F1",
+  "theme_color": "#08403C",
+  "icons": [
+    {
+      "src": "/skor-mahjong/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/skor-mahjong/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/skor-mahjong/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/skor-mahjong/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
